@@ -4,32 +4,40 @@ IMG ?= controller:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
-all: manager
-
-# Run tests
-test: generate fmt vet manifests
-	go test ./api/... ./controllers/... -coverprofile cover.out
-
-# Build manager binary
-manager: generate fmt vet
-	go build -o bin/manager main.go
+# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
+deploy-controller: generate-code
+	kustomize build config/manager | kubectl apply -f -
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet
+run: generate-code fmt vet
 	go run ./main.go
 
 # Install CRDs into a cluster
-install: manifests
-	kubectl apply -f config/crd/bases
+apply-manifests: generate-base-manifests
+	kustomize build config/crd | kubectl apply -f -
+	kustomize build config/rbac | kubectl apply -f -
 
-# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: manifests
-	kubectl apply -f config/crd/bases
-	kustomize build config/default | kubectl apply -f -
+# Push the docker image
+docker-push:
+	docker push ${IMG}
+
+# Build the docker image
+docker-build: test
+	docker build . -t ${IMG}
+	@echo "updating kustomize image patch file for manager resource"
+	sed -i'' -e 's@image: .*@image: '"${IMG}"'@' ./config/default/manager_image_patch.yaml
+
+# Run tests
+test: generate-code fmt vet generate-base-manifests
+	go test ./api/... ./controllers/... -coverprofile cover.out
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests: controller-gen
+generate-base-manifests: controller-gen-install
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+
+# Generate code
+generate-code: controller-gen-install
+	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./api/...
 
 # Run go fmt against code
 fmt:
@@ -39,23 +47,9 @@ fmt:
 vet:
 	go vet ./...
 
-# Generate code
-generate: controller-gen
-	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./api/...
-
-# Build the docker image
-docker-build: test
-	docker build . -t ${IMG}
-	@echo "updating kustomize image patch file for manager resource"
-	sed -i'' -e 's@image: .*@image: '"${IMG}"'@' ./config/default/manager_image_patch.yaml
-
-# Push the docker image
-docker-push:
-	docker push ${IMG}
-
 # find or download controller-gen
 # download controller-gen if necessary
-controller-gen:
+controller-gen-install:
 ifeq (, $(shell which controller-gen))
 	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.0-beta.2
 CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
