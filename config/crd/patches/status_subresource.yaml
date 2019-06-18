@@ -1,0 +1,20 @@
+# The following patch adds a directive for certmanager to inject CA into the CRD
+# CRD conversion requires k8s 1.13 or later.
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: releases.bosh.akgupta.ca
+spec:
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            releaseName:
+              minLength: 1
+            version:
+              minLength: 1
+            url:
+              minLength: 1
+            sha1:
+              minLength: 1

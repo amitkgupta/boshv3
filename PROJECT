@@ -1,0 +1,7 @@
+version: "2"
+domain: akgupta.ca
+repo: github.com/amitkgupta/boshv3
+resources:
+- group: bosh
+  version: v1
+  kind: Release

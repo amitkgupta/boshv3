@@ -1,0 +1,7 @@
+apiVersion: bosh.akgupta.ca/v1
+kind: Release
+metadata:
+  name: release-sample
+spec:
+  # Add fields here
+  foo: bar
