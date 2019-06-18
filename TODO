@@ -1,0 +1,88 @@
+releases:
+	name
+	version
+	url
+
+stemcells:
+	stemcell_name
+	version
+	url
+	sha1
+
+instance_groups:
+	name
+	azs
+	instances
+	jobs
+	vm_resources:
+		cpu
+		ram
+		ephemeral_disk_size
+	vm_extensions
+	stemcell
+	persistent_disk
+	networks:
+		name
+		static_ips
+		default
+	update
+		canaries
+		max_in_flight
+		canary_watch_time
+
+jobs:
+	name
+	release
+	properties
+
+
+addons
+	name
+	job
+	include
+		stemcell
+			os
+		instance_groups
+		jobs
+			name
+			release
+		networks
+	exclude
+		stemcell
+			os
+		instance_groups
+		jobs
+			name
+			release
+		networks
+
+variables
+	name
+	type
+	options
+
+azs
+	name
+	cloud_properties
+
+networks
+	name
+	type
+	subnets
+		range
+		gateway
+		dns
+		reserved
+		static
+		azs
+		cloud_properties
+
+vm_extensions
+	name
+	cloud_properties
+
+compilation (GLOBAL)
+	workers
+	az
+	vm_resources
+	network
