@@ -117,11 +117,13 @@ func (r *Release) EnsurePresentOnDirector() bool {
 }
 
 func (r *Release) PresentOnDirector(d boshdir.Director) (bool, error) {
-	return d.HasRelease(r.Status.OriginalSpec.ReleaseName, r.Status.OriginalSpec.Version, boshdir.OSVersionSlug{})
+	originalSpec := r.Status.OriginalSpec
+	return d.HasRelease(originalSpec.ReleaseName, originalSpec.Version, boshdir.OSVersionSlug{})
 }
 
 func (r *Release) UploadToDirector(d boshdir.Director) error {
-	return d.UploadReleaseURL(r.Status.OriginalSpec.URL, r.Status.OriginalSpec.SHA1, false, false)
+	originalSpec := r.Status.OriginalSpec
+	return d.UploadReleaseURL(originalSpec.URL, originalSpec.SHA1, false, false)
 }
 
 func (r *Release) DeleteFromDirector(d boshdir.Director) error {
@@ -131,7 +133,8 @@ func (r *Release) DeleteFromDirector(d boshdir.Director) error {
 		return nil
 	}
 
-	if release, err := d.FindRelease(boshdir.NewReleaseSlug(r.Status.OriginalSpec.ReleaseName, r.Status.OriginalSpec.Version)); err != nil {
+	originalSpec := r.Status.OriginalSpec
+	if release, err := d.FindRelease(boshdir.NewReleaseSlug(originalSpec.ReleaseName, originalSpec.Version)); err != nil {
 		return err
 	} else {
 		return release.Delete(false)
