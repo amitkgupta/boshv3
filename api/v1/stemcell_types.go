@@ -24,15 +24,33 @@ import (
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // StemcellSpec defines the desired state of Stemcell
+// +kubebuilder:subresource:status
 type StemcellSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	StemcellName string `json:"stemcellName"`
+	Version      string `json:"version"`
+	URL          string `json:"url"`
+	SHA1         string `json:"sha1"`
+}
+
+func (ss StemcellSpec) Empty() bool {
+	return ss.StemcellName == "" &&
+		ss.Version == "" &&
+		ss.URL == "" &&
+		ss.SHA1 == ""
+}
+
+func (ss1 StemcellSpec) Matches(ss2 StemcellSpec) bool {
+	return ss1.StemcellName == ss2.StemcellName &&
+		ss1.Version == ss2.Version &&
+		ss1.URL == ss2.URL &&
+		ss1.SHA1 == ss2.SHA1
 }
 
 // StemcellStatus defines the observed state of Stemcell
 type StemcellStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Warning           string       `json:"warning"`
+	OriginalSpec      StemcellSpec `json:"originalSpec"`
+	PresentOnDirector bool         `json:"presentOnDirector"`
 }
 
 // +kubebuilder:object:root=true

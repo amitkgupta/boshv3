@@ -401,8 +401,47 @@ spec:
               type: string
           type: object
         spec:
+          properties:
+            sha1:
+              type: string
+            stemcellName:
+              type: string
+            url:
+              type: string
+            version:
+              type: string
+          required:
+          - stemcellName
+          - version
+          - url
+          - sha1
           type: object
         status:
+          properties:
+            originalSpec:
+              properties:
+                sha1:
+                  type: string
+                stemcellName:
+                  type: string
+                url:
+                  type: string
+                version:
+                  type: string
+              required:
+              - stemcellName
+              - version
+              - url
+              - sha1
+              type: object
+            presentOnDirector:
+              type: boolean
+            warning:
+              type: string
+          required:
+          - warning
+          - originalSpec
+          - presentOnDirector
           type: object
       type: object
   versions:
