@@ -24,24 +24,31 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	boshv1 "github.com/amitkgupta/boshv3/api/v1"
+
+	boshdir "github.com/cloudfoundry/bosh-cli/director"
 )
 
 // StemcellReconciler reconciles a Stemcell object
 type StemcellReconciler struct {
 	client.Client
-	Log logr.Logger
+	Log      logr.Logger
+	Director boshdir.Director
 }
 
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=stemcells,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=stemcells/status,verbs=get;update;patch
 
 func (r *StemcellReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("stemcell", req.NamespacedName)
+	ctx := context.Background()
+	log := r.Log.WithValues("stemcell", req.NamespacedName)
 
-	// your logic here
+	var stemcell boshv1.Stemcell
+	if err := r.Get(ctx, req.NamespacedName, &stemcell); err != nil {
+		log.Error(err, "unable to fetch stemcell")
+		return ctrl.Result{}, ignoreNotFound(err)
+	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{}, reconcileWithDirector(ctx, r.Client, r.Director, &stemcell)
 }
 
 func (r *StemcellReconciler) SetupWithManager(mgr ctrl.Manager) error {
