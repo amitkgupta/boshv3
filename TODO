@@ -1,3 +1,12 @@
+1. Test stemcells
+2. Tenancy
+3. Logging
+4. MOAR BOSH concepts (see below)
+5. Docs
+6. Tests
+
+BOSH Concepts
+-------------
 releases:
 	name
 	version
