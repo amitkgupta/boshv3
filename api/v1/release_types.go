@@ -17,7 +17,11 @@ limitations under the License.
 package v1
 
 import (
+	"strings"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	boshdir "github.com/cloudfoundry/bosh-cli/director"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -30,20 +34,6 @@ type ReleaseSpec struct {
 	Version     string `json:"version"`
 	URL         string `json:"url"`
 	SHA1        string `json:"sha1"`
-}
-
-func (rs ReleaseSpec) Empty() bool {
-	return rs.ReleaseName == "" &&
-		rs.Version == "" &&
-		rs.URL == "" &&
-		rs.SHA1 == ""
-}
-
-func (rs1 ReleaseSpec) Matches(rs2 ReleaseSpec) bool {
-	return rs1.ReleaseName == rs2.ReleaseName &&
-		rs1.Version == rs2.Version &&
-		rs1.URL == rs2.URL &&
-		rs1.SHA1 == rs2.SHA1
 }
 
 // ReleaseStatus defines the observed state of Release
@@ -62,6 +52,90 @@ type Release struct {
 
 	Spec   ReleaseSpec   `json:"spec,omitempty"`
 	Status ReleaseStatus `json:"status,omitempty"`
+}
+
+func (r *Release) BeingDeleted() bool {
+	return !r.ObjectMeta.DeletionTimestamp.IsZero()
+}
+
+var releaseFinalizer = strings.Join([]string{"release", finalizerBase}, ".")
+
+func (r *Release) HasFinalizer() bool {
+	return containsString(r.ObjectMeta.Finalizers, releaseFinalizer)
+}
+
+func (r *Release) EnsureFinalizer() bool {
+	hadFinalizer := r.HasFinalizer()
+	r.ObjectMeta.Finalizers = append(r.ObjectMeta.Finalizers, releaseFinalizer)
+	return !hadFinalizer
+}
+
+func (r *Release) RemoveFinalizer() {
+	r.ObjectMeta.Finalizers = removeString(r.ObjectMeta.Finalizers, releaseFinalizer)
+}
+
+func (r *Release) SaveOriginalSpec() (bool, bool) {
+	originalSpec := r.Status.OriginalSpec
+
+	saved := originalSpec.ReleaseName == ""
+	mutated := false
+
+	if saved {
+		r.Status.OriginalSpec = r.Spec
+	} else {
+		mutated = r.Spec.ReleaseName != originalSpec.ReleaseName ||
+			r.Spec.Version != originalSpec.Version ||
+			r.Spec.URL != originalSpec.URL ||
+			r.Spec.SHA1 != originalSpec.SHA1
+	}
+
+	return saved, mutated
+}
+
+func (r *Release) EnsureWarning() bool {
+	changed := r.Status.Warning == ""
+	r.Status.Warning = resourceMutationWarning
+	return changed
+}
+
+func (r *Release) EnsureNoWarning() bool {
+	changed := r.Status.Warning != ""
+	r.Status.Warning = ""
+	return changed
+}
+
+func (r *Release) EnsureAbsentFromDirector() bool {
+	changed := r.Status.PresentOnDirector
+	r.Status.PresentOnDirector = false
+	return changed
+}
+
+func (r *Release) EnsurePresentOnDirector() bool {
+	changed := !r.Status.PresentOnDirector
+	r.Status.PresentOnDirector = true
+	return changed
+}
+
+func (r *Release) PresentOnDirector(d boshdir.Director) (bool, error) {
+	return d.HasRelease(r.Status.OriginalSpec.ReleaseName, r.Status.OriginalSpec.Version, boshdir.OSVersionSlug{})
+}
+
+func (r *Release) UploadToDirector(d boshdir.Director) error {
+	return d.UploadReleaseURL(r.Status.OriginalSpec.URL, r.Status.OriginalSpec.SHA1, false, false)
+}
+
+func (r *Release) DeleteFromDirector(d boshdir.Director) error {
+	if present, err := r.PresentOnDirector(d); err != nil {
+		return err
+	} else if !present {
+		return nil
+	}
+
+	if release, err := d.FindRelease(boshdir.NewReleaseSlug(r.Status.OriginalSpec.ReleaseName, r.Status.OriginalSpec.Version)); err != nil {
+		return err
+	} else {
+		return release.Delete(false)
+	}
 }
 
 // +kubebuilder:object:root=true
