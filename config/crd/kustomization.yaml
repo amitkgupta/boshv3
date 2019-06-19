@@ -3,15 +3,18 @@
 # It should be run by config/default
 resources:
 - bases/bosh.akgupta.ca_releases.yaml
+- bases/bosh.akgupta.ca_stemcells.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
 # [WEBHOOK] patches here are for enabling the conversion webhook for each CRD
 #- patches/webhook_in_releases.yaml
+#- patches/webhook_in_stemcells.yaml
 # +kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CAINJECTION] patches here are for enabling the CA injection for each CRD
 #- patches/cainjection_in_releases.yaml
+#- patches/cainjection_in_stemcells.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 - patches/scope_namespaced.yaml
 - patches/categories.yaml

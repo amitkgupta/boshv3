@@ -1,0 +1,7 @@
+apiVersion: bosh.akgupta.ca/v1
+kind: Stemcell
+metadata:
+  name: stemcell-sample
+spec:
+  # Add fields here
+  foo: bar
