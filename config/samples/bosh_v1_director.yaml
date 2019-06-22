@@ -1,0 +1,7 @@
+apiVersion: bosh.akgupta.ca/v1
+kind: Director
+metadata:
+  name: director-sample
+spec:
+  # Add fields here
+  foo: bar
