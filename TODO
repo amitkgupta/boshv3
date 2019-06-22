@@ -1,22 +1,15 @@
-2. Tenancy
-3. Logging
+1. Tenancy
+	controllers in any namespace?
+	directors in no namespace
+	director secret references assumed for bosh-system-namespace
+	operator must put secrets in that namespace
+	controller creates team secrets in bosh-system-namespace
+	controller fetches team secrets from bosh-system-namespace
 4. MOAR BOSH concepts (see below)
 5. Docs
-6. Tests
 
-BOSH Concepts
+Remaining BOSH Concepts
 -------------
-releases:
-	name
-	version
-	url
-
-stemcells:
-	stemcell_name
-	version
-	url
-	sha1
-
 instance_groups:
 	name
 	azs
