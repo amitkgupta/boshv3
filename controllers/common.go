@@ -61,12 +61,6 @@ func reconcileWithDirector(ctx context.Context, c client.Client, d boshdir.Direc
 		}
 
 		return nil
-	} else {
-		if changed := ba.EnsureFinalizer(); changed {
-			if err := c.Update(ctx, ba); err != nil {
-				return err
-			}
-		}
 	}
 
 	saved, mutated := ba.SaveOriginalSpec()
@@ -95,6 +89,12 @@ func reconcileWithDirector(ctx context.Context, c client.Client, d boshdir.Direc
 	} else if !present {
 		if changed := ba.EnsureAbsentFromDirector(); changed {
 			if err := c.Status().Update(ctx, ba); err != nil {
+				return err
+			}
+		}
+
+		if changed := ba.EnsureFinalizer(); changed {
+			if err := c.Update(ctx, ba); err != nil {
 				return err
 			}
 		}
