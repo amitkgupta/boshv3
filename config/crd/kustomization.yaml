@@ -19,13 +19,11 @@ patches:
 #- patches/cainjection_in_stemcells.yaml
 #- patches/cainjection_in_directors.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
-- patches/scope_namespaced_in_releases.yaml
 - patches/categories_in_releases.yaml
 - patches/nonempty_spec_properties_validations_in_releases.yaml
 - patches/additional_printer_columns_in_releases.yaml
 - patches/status_subresource_in_releases.yaml
 
-- patches/scope_namespaced_in_stemcells.yaml
 - patches/categories_in_stemcells.yaml
 - patches/nonempty_spec_properties_validations_in_stemcells.yaml
 - patches/additional_printer_columns_in_stemcells.yaml
