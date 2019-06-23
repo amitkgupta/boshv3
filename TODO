@@ -1,14 +1,16 @@
-1. everything remote status/availabel
-2. MOAR BOSH concepts (see below)
-3. build image, deploy
-4. Docs
+1. build image, deploy
+1. logging
+1. MOAR BOSH concepts (see below)
+1. Docs
+1. tests
+1. ci
 
 Remaining BOSH Concepts
 -------------
 instance_groups:
 	name
 	azs
-	instances
+	instances (scale subr)
 	jobs
 	vm_resources:
 		cpu
@@ -26,34 +28,13 @@ instance_groups:
 		max_in_flight
 		canary_watch_time
 
-jobs:
+jobs_configuration:
 	name
 	release
 	properties
 
-
-addons
-	name
-	job
-	include
-		stemcell
-			os
-		instance_groups
-		jobs
-			name
-			release
-		networks
-	exclude
-		stemcell
-			os
-		instance_groups
-		jobs
-			name
-			release
-		networks
-
 variables
-	name
+	name // must start with '/'
 	type
 	options
 
@@ -82,3 +63,25 @@ compilation (GLOBAL)
 	az
 	vm_resources
 	network
+
+----
+
+addons
+	name
+	job
+	include
+		stemcell
+			os
+		instance_groups
+		jobs
+			name
+			release
+		networks
+	exclude
+		stemcell
+			os
+		instance_groups
+		jobs
+			name
+			release
+		networks
