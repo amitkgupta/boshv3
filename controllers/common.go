@@ -81,7 +81,11 @@ func reconcileWithBOSH(ctx context.Context, c client.Client, bc remoteclients.BO
 		}
 	}
 
-	return ba.CreateUnlessExists(bc)
+	if err := ba.CreateUnlessExists(bc); err != nil {
+		return err
+	} else {
+		return c.Status().Update(ctx, ba)
+	}
 }
 
 func boshClientForNamespace(ctx context.Context, c client.Client, namespace string) (remoteclients.BOSHClient, error) {

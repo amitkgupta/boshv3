@@ -9,28 +9,28 @@ spec:
       description: The URL of the BOSH Director
       JSONPath: .spec.url
       priority: 0
-    - name: CA Certifiate
-      type: string
-      description: The CA certificate to trust for connections to the BOSH Director
-      JSONPath: .spec.ca_cert
-      priority: 1
-    - name: UAA URL
-      type: string
-      description: The URL of the UAA for the BOSH Director
-      JSONPath: .spec.uaa_url
-      priority: 0
-    - name: UAA CA Certificate
-      type: string
-      description: The CA certificate to trust for connections to the UAA for the BOSH Director
-      JSONPath: .spec.uaa_ca_cert
-      priority: 1
     - name: UAA Client
       type: string
       description: The UAA client for the BOSH Director
       JSONPath: .spec.uaa_client
       priority: 0
+    - name: UAA URL
+      type: string
+      description: The URL of the UAA for the BOSH Director
+      JSONPath: .spec.uaa_url
+      priority: 1
     - name: UAA Client Secret
       type: string
       description: The Secret storing the UAA client secret for the BOSH Director
       JSONPath: .spec.uaa_client_secret
-      priority: 0
+      priority: 1
+    - name: CA Certifiate
+      type: string
+      description: The CA certificate to trust for connections to the BOSH Director
+      JSONPath: .spec.ca_cert
+      priority: 1
+    - name: UAA CA Certificate
+      type: string
+      description: The CA certificate to trust for connections to the UAA for the BOSH Director
+      JSONPath: .spec.uaa_ca_cert
+      priority: 1

@@ -418,6 +418,8 @@ spec:
           type: object
         status:
           properties:
+            available:
+              type: boolean
             originalSpec:
               properties:
                 sha1:
@@ -434,14 +436,12 @@ spec:
               - url
               - sha1
               type: object
-            presentOnDirector:
-              type: boolean
             warning:
               type: string
           required:
           - warning
           - originalSpec
-          - presentOnDirector
+          - available
           type: object
       type: object
   versions:

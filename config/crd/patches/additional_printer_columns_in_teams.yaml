@@ -9,6 +9,11 @@ spec:
       description: The Director resource to which this BOSH Team belongs
       JSONPath: .status.original_director
       priority: 0
+    - name: Available
+      type: boolean
+      description: Indicates this BOSH team is available for use
+      JSONPath: .status.available
+      priority: 0
     - name: Warning
       type: string
       description: Warning to display if custom resource has been mutated

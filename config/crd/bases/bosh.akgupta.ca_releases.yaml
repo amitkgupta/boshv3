@@ -418,6 +418,8 @@ spec:
           type: object
         status:
           properties:
+            available:
+              type: boolean
             originalSpec:
               properties:
                 releaseName:
@@ -439,6 +441,7 @@ spec:
           required:
           - warning
           - originalSpec
+          - available
           type: object
       type: object
   versions:

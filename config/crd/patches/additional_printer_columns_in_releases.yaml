@@ -14,6 +14,11 @@ spec:
       description: The version of the BOSH release
       JSONPath: .status.originalSpec.version
       priority: 0
+    - name: Available
+      type: boolean
+      description: Indicates this BOSH release is available for use
+      JSONPath: .status.available
+      priority: 0
     - name: Warning
       type: string
       description: Warning to display if custom resource has been mutated

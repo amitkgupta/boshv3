@@ -163,5 +163,9 @@ func reconcileWithUAA(
 		return err
 	}
 
-	return ue.CreateUnlessExists(uc, secretData)
+	if err := ue.CreateUnlessExists(uc, secretData); err != nil {
+		return err
+	} else {
+		return c.Status().Update(ctx, ue)
+	}
 }

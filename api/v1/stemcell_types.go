@@ -38,9 +38,9 @@ type StemcellSpec struct {
 
 // StemcellStatus defines the observed state of Stemcell
 type StemcellStatus struct {
-	Warning           string       `json:"warning"`
-	OriginalSpec      StemcellSpec `json:"originalSpec"`
-	PresentOnDirector bool         `json:"presentOnDirector"`
+	Warning      string       `json:"warning"`
+	OriginalSpec StemcellSpec `json:"originalSpec"`
+	Available    bool         `json:"available"`
 }
 
 // +kubebuilder:object:root=true
@@ -114,6 +114,8 @@ func (s *Stemcell) CreateUnlessExists(bc remoteclients.BOSHClient) error {
 			stemcellSpec.SHA1,
 		)
 	}
+
+	s.Status.Available = true
 
 	return nil
 }

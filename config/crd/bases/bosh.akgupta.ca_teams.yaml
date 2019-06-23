@@ -409,6 +409,8 @@ spec:
           type: object
         status:
           properties:
+            available:
+              type: boolean
             original_director:
               type: string
             secret_namespace:
@@ -419,6 +421,7 @@ spec:
           - warning
           - original_director
           - secret_namespace
+          - available
           type: object
       type: object
   versions:

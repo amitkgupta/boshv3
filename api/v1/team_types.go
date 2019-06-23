@@ -37,6 +37,7 @@ type TeamStatus struct {
 	Warning          string `json:"warning"`
 	OriginalDirector string `json:"original_director"`
 	SecretNamespace  string `json:"secret_namespace"`
+	Available        bool   `json:"available"`
 }
 
 // +kubebuilder:object:root=true
@@ -114,6 +115,8 @@ func (t *Team) CreateUnlessExists(uc remoteclients.UAAClient, secretData string)
 			[]string{"bosh.admin"}, // TODO: needed to delete releases, etc.
 		)
 	}
+
+	t.Status.Available = true
 
 	return nil
 }

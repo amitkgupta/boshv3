@@ -40,6 +40,7 @@ type ReleaseSpec struct {
 type ReleaseStatus struct {
 	Warning      string      `json:"warning"`
 	OriginalSpec ReleaseSpec `json:"originalSpec"`
+	Available    bool        `json:"available"`
 }
 
 // +kubebuilder:object:root=true
@@ -113,6 +114,8 @@ func (r *Release) CreateUnlessExists(bc remoteclients.BOSHClient) error {
 			releaseSpec.SHA1,
 		)
 	}
+
+	r.Status.Available = true
 
 	return nil
 }
