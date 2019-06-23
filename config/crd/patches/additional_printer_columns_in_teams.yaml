@@ -1,0 +1,21 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: teams.bosh.akgupta.ca
+spec:
+  additionalPrinterColumns:
+    - name: Director
+      type: string
+      description: The Director resource to which this BOSH Team belongs
+      JSONPath: .status.original_director
+      priority: 0
+    - name: Warning
+      type: string
+      description: Warning to display if custom resource has been mutated
+      JSONPath: .status.warning
+      priority: 0
+    - name: User-provided Director
+      type: string
+      description: Same as 'Director' unless resource has been mutated 
+      JSONPath: .spec.director
+      priority: 1

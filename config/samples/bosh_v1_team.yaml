@@ -1,0 +1,7 @@
+apiVersion: bosh.akgupta.ca/v1
+kind: Team
+metadata:
+  name: team-sample
+spec:
+  # Add fields here
+  foo: bar

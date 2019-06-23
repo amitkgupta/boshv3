@@ -21,7 +21,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	boshdir "github.com/cloudfoundry/bosh-cli/director"
+	"github.com/amitkgupta/boshv3/remote-clients"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -38,9 +38,8 @@ type ReleaseSpec struct {
 
 // ReleaseStatus defines the observed state of Release
 type ReleaseStatus struct {
-	Warning           string      `json:"warning"`
-	OriginalSpec      ReleaseSpec `json:"originalSpec"`
-	PresentOnDirector bool        `json:"presentOnDirector"`
+	Warning      string      `json:"warning"`
+	OriginalSpec ReleaseSpec `json:"originalSpec"`
 }
 
 // +kubebuilder:object:root=true
@@ -60,85 +59,80 @@ func (r *Release) BeingDeleted() bool {
 
 var releaseFinalizer = strings.Join([]string{"release", finalizerBase}, ".")
 
-func (r *Release) HasFinalizer() bool {
+func (r *Release) hasFinalizer() bool {
 	return containsString(r.ObjectMeta.Finalizers, releaseFinalizer)
 }
 
 func (r *Release) EnsureFinalizer() bool {
-	hadFinalizer := r.HasFinalizer()
+	changed := !r.hasFinalizer()
 	r.ObjectMeta.Finalizers = append(r.ObjectMeta.Finalizers, releaseFinalizer)
-	return !hadFinalizer
+	return changed
 }
 
-func (r *Release) RemoveFinalizer() {
+func (r *Release) EnsureNoFinalizer() bool {
+	changed := r.hasFinalizer()
 	r.ObjectMeta.Finalizers = removeString(r.ObjectMeta.Finalizers, releaseFinalizer)
+	return changed
 }
 
-func (r *Release) SaveOriginalSpec() (bool, bool) {
+func (r *Release) PrepareToSave() (needsStatusUpdate bool) {
 	originalSpec := r.Status.OriginalSpec
 
-	saved := originalSpec.ReleaseName == ""
-	mutated := false
-
-	if saved {
+	if originalSpec.ReleaseName == "" {
 		r.Status.OriginalSpec = r.Spec
+		needsStatusUpdate = true
 	} else {
-		mutated = r.Spec.ReleaseName != originalSpec.ReleaseName ||
+		mutated := r.Spec.ReleaseName != originalSpec.ReleaseName ||
 			r.Spec.Version != originalSpec.Version ||
 			r.Spec.URL != originalSpec.URL ||
 			r.Spec.SHA1 != originalSpec.SHA1
+
+		if mutated && r.Status.Warning == "" {
+			r.Status.Warning = resourceMutationWarning
+			needsStatusUpdate = true
+		} else if !mutated && r.Status.Warning != "" {
+			r.Status.Warning = ""
+			needsStatusUpdate = true
+		}
 	}
 
-	return saved, mutated
+	return
 }
 
-func (r *Release) EnsureWarning() bool {
-	changed := r.Status.Warning == ""
-	r.Status.Warning = resourceMutationWarning
-	return changed
-}
+func (r *Release) CreateUnlessExists(bc remoteclients.BOSHClient) error {
+	releaseSpec := r.Status.OriginalSpec
 
-func (r *Release) EnsureNoWarning() bool {
-	changed := r.Status.Warning != ""
-	r.Status.Warning = ""
-	return changed
-}
-
-func (r *Release) EnsureAbsentFromDirector() bool {
-	changed := r.Status.PresentOnDirector
-	r.Status.PresentOnDirector = false
-	return changed
-}
-
-func (r *Release) EnsurePresentOnDirector() bool {
-	changed := !r.Status.PresentOnDirector
-	r.Status.PresentOnDirector = true
-	return changed
-}
-
-func (r *Release) PresentOnDirector(d boshdir.Director) (bool, error) {
-	originalSpec := r.Status.OriginalSpec
-	return d.HasRelease(originalSpec.ReleaseName, originalSpec.Version, boshdir.OSVersionSlug{})
-}
-
-func (r *Release) UploadToDirector(d boshdir.Director) error {
-	originalSpec := r.Status.OriginalSpec
-	return d.UploadReleaseURL(originalSpec.URL, originalSpec.SHA1, false, false)
-}
-
-func (r *Release) DeleteFromDirector(d boshdir.Director) error {
-	if present, err := r.PresentOnDirector(d); err != nil {
+	if present, err := bc.HasRelease(
+		releaseSpec.ReleaseName,
+		releaseSpec.Version,
+	); err != nil {
 		return err
 	} else if !present {
-		return nil
+		return bc.UploadRelease(
+			releaseSpec.URL,
+			releaseSpec.SHA1,
+		)
 	}
 
-	originalSpec := r.Status.OriginalSpec
-	if release, err := d.FindRelease(boshdir.NewReleaseSlug(originalSpec.ReleaseName, originalSpec.Version)); err != nil {
+	return nil
+}
+
+func (r *Release) DeleteIfExists(bc remoteclients.BOSHClient) error {
+	releaseSpec := r.Status.OriginalSpec
+
+	if present, err := bc.HasRelease(
+		releaseSpec.ReleaseName,
+		releaseSpec.Version,
+	); err != nil {
 		return err
-	} else {
-		return release.Delete(false)
+	} else if present {
+		return bc.DeleteRelease(
+			releaseSpec.ReleaseName,
+			releaseSpec.Version,
+		)
 	}
+
+	return nil
 }
 
 // +kubebuilder:object:root=true

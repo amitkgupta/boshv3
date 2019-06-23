@@ -26,12 +26,9 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
 	// +kubebuilder:scaffold:imports
 
-	boshdir "github.com/cloudfoundry/bosh-cli/director"
-	boshuaa "github.com/cloudfoundry/bosh-cli/uaa"
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
+	"k8s.io/api/core/v1"
 )
 
 var (
@@ -43,6 +40,8 @@ func init() {
 
 	boshv1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
+
+	v1.AddToScheme(scheme)
 }
 
 func main() {
@@ -65,32 +64,29 @@ func main() {
 		os.Exit(1)
 	}
 
-	uaa, err := buildUAA()
-	if err != nil {
-		panic(err)
-	}
-
-	director, err := buildDirector(uaa)
-	if err != nil {
-		panic(err)
-	}
-
 	err = (&controllers.ReleaseReconciler{
-		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("Release"),
-		Director: director,
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Release"),
 	}).SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Release")
 		os.Exit(1)
 	}
 	err = (&controllers.StemcellReconciler{
-		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("Stemcell"),
-		Director: director,
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Stemcell"),
 	}).SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Stemcell")
+		os.Exit(1)
+	}
+	err = (&controllers.TeamReconciler{
+		Client:              mgr.GetClient(),
+		Log:                 ctrl.Log.WithName("controllers").WithName("Team"),
+		BOSHSystemNamespace: os.Getenv("BOSH_SYSTEM_NAMESPACE"),
+	}).SetupWithManager(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Team")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
@@ -100,37 +96,4 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-}
-
-func buildUAA() (boshuaa.UAA, error) {
-	logger := boshlog.NewLogger(boshlog.LevelError)
-	factory := boshuaa.NewFactory(logger)
-
-	config, err := boshuaa.NewConfigFromURL(os.Getenv("UAA_URL"))
-	if err != nil {
-		return nil, err
-	}
-
-	config.Client = os.Getenv("UAA_CLIENT")
-	config.ClientSecret = os.Getenv("UAA_CLIENT_SECRET")
-
-	config.CACert = os.Getenv("UAA_CA_CERT")
-
-	return factory.New(config)
-}
-
-func buildDirector(uaa boshuaa.UAA) (boshdir.Director, error) {
-	logger := boshlog.NewLogger(boshlog.LevelError)
-	factory := boshdir.NewFactory(logger)
-
-	factoryConfig, err := boshdir.NewConfigFromURL(os.Getenv("DIRECTOR_URL"))
-	if err != nil {
-		return nil, err
-	}
-
-	factoryConfig.CACert = os.Getenv("DIRECTOR_CA_CERT")
-
-	factoryConfig.TokenFunc = boshuaa.NewClientTokenSession(uaa).TokenFunc
-
-	return factory.New(factoryConfig, boshdir.NewNoopTaskReporter(), boshdir.NewNoopFileReporter())
 }

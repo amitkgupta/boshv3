@@ -20,8 +20,15 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 )
 
-func ignoreNotFound(err error) error {
-	if apierrs.IsNotFound(err) {
+func ignoreDoesNotExist(err error) error {
+	if apierrs.IsNotFound(err) || apierrs.IsGone(err) {
+		return nil
+	}
+	return err
+}
+
+func ignoreAlreadyExists(err error) error {
+	if apierrs.IsAlreadyExists(err) {
 		return nil
 	}
 	return err

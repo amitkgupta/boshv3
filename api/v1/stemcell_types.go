@@ -21,7 +21,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	boshdir "github.com/cloudfoundry/bosh-cli/director"
+	"github.com/amitkgupta/boshv3/remote-clients"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -60,85 +60,80 @@ func (s *Stemcell) BeingDeleted() bool {
 
 var stemcellFinalizer = strings.Join([]string{"stemcell", finalizerBase}, ".")
 
-func (s *Stemcell) HasFinalizer() bool {
+func (s *Stemcell) hasFinalizer() bool {
 	return containsString(s.ObjectMeta.Finalizers, stemcellFinalizer)
 }
 
 func (s *Stemcell) EnsureFinalizer() bool {
-	hadFinalizer := s.HasFinalizer()
+	changed := !s.hasFinalizer()
 	s.ObjectMeta.Finalizers = append(s.ObjectMeta.Finalizers, stemcellFinalizer)
-	return !hadFinalizer
+	return changed
 }
 
-func (s *Stemcell) RemoveFinalizer() {
+func (s *Stemcell) EnsureNoFinalizer() bool {
+	changed := s.hasFinalizer()
 	s.ObjectMeta.Finalizers = removeString(s.ObjectMeta.Finalizers, stemcellFinalizer)
+	return changed
 }
 
-func (s *Stemcell) SaveOriginalSpec() (bool, bool) {
+func (s *Stemcell) PrepareToSave() (needsStatusUpdate bool) {
 	originalSpec := s.Status.OriginalSpec
 
-	saved := originalSpec.StemcellName == ""
-	mutated := false
-
-	if saved {
+	if originalSpec.StemcellName == "" {
 		s.Status.OriginalSpec = s.Spec
+		needsStatusUpdate = true
 	} else {
-		mutated = s.Spec.StemcellName != originalSpec.StemcellName ||
+		mutated := s.Spec.StemcellName != originalSpec.StemcellName ||
 			s.Spec.Version != originalSpec.Version ||
 			s.Spec.URL != originalSpec.URL ||
 			s.Spec.SHA1 != originalSpec.SHA1
+
+		if mutated && s.Status.Warning == "" {
+			s.Status.Warning = resourceMutationWarning
+			needsStatusUpdate = true
+		} else if !mutated && s.Status.Warning != "" {
+			s.Status.Warning = ""
+			needsStatusUpdate = true
+		}
 	}
 
-	return saved, mutated
+	return
 }
 
-func (s *Stemcell) EnsureWarning() bool {
-	changed := s.Status.Warning == ""
-	s.Status.Warning = resourceMutationWarning
-	return changed
-}
+func (s *Stemcell) CreateUnlessExists(bc remoteclients.BOSHClient) error {
+	stemcellSpec := s.Status.OriginalSpec
 
-func (s *Stemcell) EnsureNoWarning() bool {
-	changed := s.Status.Warning != ""
-	s.Status.Warning = ""
-	return changed
-}
-
-func (s *Stemcell) EnsureAbsentFromDirector() bool {
-	changed := s.Status.PresentOnDirector
-	s.Status.PresentOnDirector = false
-	return changed
-}
-
-func (s *Stemcell) EnsurePresentOnDirector() bool {
-	changed := !s.Status.PresentOnDirector
-	s.Status.PresentOnDirector = true
-	return changed
-}
-
-func (s *Stemcell) PresentOnDirector(d boshdir.Director) (bool, error) {
-	originalSpec := s.Status.OriginalSpec
-	return d.HasStemcell(originalSpec.StemcellName, originalSpec.Version)
-}
-
-func (s *Stemcell) UploadToDirector(d boshdir.Director) error {
-	originalSpec := s.Status.OriginalSpec
-	return d.UploadStemcellURL(originalSpec.URL, originalSpec.SHA1, false)
-}
-
-func (s *Stemcell) DeleteFromDirector(d boshdir.Director) error {
-	if present, err := s.PresentOnDirector(d); err != nil {
+	if present, err := bc.HasStemcell(
+		stemcellSpec.StemcellName,
+		stemcellSpec.Version,
+	); err != nil {
 		return err
 	} else if !present {
-		return nil
+		return bc.UploadStemcell(
+			stemcellSpec.URL,
+			stemcellSpec.SHA1,
+		)
 	}
 
-	originalSpec := s.Status.OriginalSpec
-	if stemcell, err := d.FindStemcell(boshdir.NewStemcellSlug(originalSpec.StemcellName, originalSpec.Version)); err != nil {
+	return nil
+}
+
+func (s *Stemcell) DeleteIfExists(bc remoteclients.BOSHClient) error {
+	stemcellSpec := s.Status.OriginalSpec
+
+	if present, err := bc.HasStemcell(
+		stemcellSpec.StemcellName,
+		stemcellSpec.Version,
+	); err != nil {
 		return err
-	} else {
-		return stemcell.Delete(false)
+	} else if present {
+		return bc.DeleteStemcell(
+			stemcellSpec.StemcellName,
+			stemcellSpec.Version,
+		)
 	}
+
+	return nil
 }
 
 // +kubebuilder:object:root=true

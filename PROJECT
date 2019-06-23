@@ -11,3 +11,6 @@ resources:
 - group: bosh
   version: v1
   kind: Director
+- group: bosh
+  version: v1
+  kind: Team

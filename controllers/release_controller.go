@@ -24,15 +24,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	boshv1 "github.com/amitkgupta/boshv3/api/v1"
-
-	boshdir "github.com/cloudfoundry/bosh-cli/director"
 )
 
 // ReleaseReconciler reconciles a Release object
 type ReleaseReconciler struct {
 	client.Client
-	Log      logr.Logger
-	Director boshdir.Director
+	Log logr.Logger
 }
 
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=releases,verbs=get;list;watch;create;update;patch;delete
@@ -45,10 +42,23 @@ func (r *ReleaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	var release boshv1.Release
 	if err := r.Get(ctx, req.NamespacedName, &release); err != nil {
 		log.Error(err, "unable to fetch release")
-		return ctrl.Result{}, ignoreNotFound(err)
+		return ctrl.Result{}, ignoreDoesNotExist(err)
 	}
 
-	return ctrl.Result{}, reconcileWithDirector(ctx, r.Client, r.Director, &release)
+	if bc, err := boshClientForNamespace(
+		ctx,
+		r.Client,
+		req.NamespacedName.Namespace,
+	); err != nil {
+		return ctrl.Result{}, err
+	} else {
+		return ctrl.Result{}, reconcileWithBOSH(
+			ctx,
+			r.Client,
+			bc,
+			&release,
+		)
+	}
 }
 
 func (r *ReleaseReconciler) SetupWithManager(mgr ctrl.Manager) error {

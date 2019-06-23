@@ -18,43 +18,49 @@ package controllers
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	boshdir "github.com/cloudfoundry/bosh-cli/director"
+	boshv1 "github.com/amitkgupta/boshv3/api/v1"
+	"github.com/amitkgupta/boshv3/remote-clients"
 )
+
+type extensional interface {
+	BeingDeleted() bool
+	EnsureNoFinalizer() bool
+	EnsureFinalizer() bool
+}
 
 type boshArtifact interface {
 	runtime.Object
-
-	BeingDeleted() bool
-
-	HasFinalizer() bool
-	EnsureFinalizer() bool
-	RemoveFinalizer()
-
-	SaveOriginalSpec() (bool, bool)
-
-	EnsureWarning() bool
-	EnsureNoWarning() bool
-
-	EnsureAbsentFromDirector() bool
-	EnsurePresentOnDirector() bool
-
-	PresentOnDirector(boshdir.Director) (bool, error)
-	UploadToDirector(boshdir.Director) error
-	DeleteFromDirector(boshdir.Director) error
+	extensional
+	PrepareToSave() bool
+	CreateUnlessExists(remoteclients.BOSHClient) error
+	DeleteIfExists(remoteclients.BOSHClient) error
 }
 
-func reconcileWithDirector(ctx context.Context, c client.Client, d boshdir.Director, ba boshArtifact) error {
-	if ba.BeingDeleted() {
-		if ba.HasFinalizer() {
-			if err := ba.DeleteFromDirector(d); err != nil {
-				return err
-			}
+type uaaEntity interface {
+	runtime.Object
+	extensional
+	PrepareToSave(string) bool
+	SecretName() string
+	SecretNamespace() string
+	CreateUnlessExists(remoteclients.UAAClient, string) error
+	DeleteIfExists(remoteclients.UAAClient) error
+}
 
-			ba.RemoveFinalizer()
+func reconcileWithBOSH(ctx context.Context, c client.Client, bc remoteclients.BOSHClient, ba boshArtifact) error {
+	if ba.BeingDeleted() {
+		if err := ba.DeleteIfExists(bc); err != nil {
+			return err
+		}
+
+		if ba.EnsureNoFinalizer() {
 			if err := c.Update(ctx, ba); err != nil {
 				return err
 			}
@@ -63,52 +69,66 @@ func reconcileWithDirector(ctx context.Context, c client.Client, d boshdir.Direc
 		return nil
 	}
 
-	saved, mutated := ba.SaveOriginalSpec()
-	if saved {
+	if ba.PrepareToSave() {
 		if err := c.Status().Update(ctx, ba); err != nil {
 			return err
 		}
 	}
 
-	if mutated {
-		if changed := ba.EnsureWarning(); changed {
-			if err := c.Status().Update(ctx, ba); err != nil {
-				return err
-			}
-		}
-	} else {
-		if changed := ba.EnsureNoWarning(); changed {
-			if err := c.Status().Update(ctx, ba); err != nil {
-				return err
-			}
-		}
-	}
-
-	if present, err := ba.PresentOnDirector(d); err != nil {
-		return err
-	} else if !present {
-		if changed := ba.EnsureAbsentFromDirector(); changed {
-			if err := c.Status().Update(ctx, ba); err != nil {
-				return err
-			}
-		}
-
-		if changed := ba.EnsureFinalizer(); changed {
-			if err := c.Update(ctx, ba); err != nil {
-				return err
-			}
-		}
-
-		if err := ba.UploadToDirector(d); err != nil {
+	if ba.EnsureFinalizer() {
+		if err := c.Update(ctx, ba); err != nil {
 			return err
 		}
-
-		if changed := ba.EnsurePresentOnDirector(); changed {
-			if err := c.Status().Update(ctx, ba); err != nil {
-				return err
-			}
-		}
 	}
 
-	return nil
+	return ba.CreateUnlessExists(bc)
+}
+
+func boshClientForNamespace(ctx context.Context, c client.Client, namespace string) (remoteclients.BOSHClient, error) {
+	var teams boshv1.TeamList
+	if err := c.List(ctx, &teams, client.InNamespace(namespace)); err != nil {
+		return nil, err
+	}
+
+	if len(teams.Items) == 0 {
+		return nil, errors.New(fmt.Sprintf("No team assigned to '%s' namespace", namespace))
+	}
+
+	if len(teams.Items) > 1 {
+		return nil, errors.New(fmt.Sprintf("Detected %d teams in '%s' namespace", len(teams.Items), namespace))
+	}
+
+	team := teams.Items[0]
+
+	var secret v1.Secret
+	if err := c.Get(
+		ctx,
+		types.NamespacedName{
+			Namespace: team.SecretNamespace(),
+			Name:      team.SecretName(),
+		},
+		&secret,
+	); err != nil {
+		return nil, err
+	}
+
+	var director boshv1.Director
+	if err := c.Get(
+		ctx,
+		types.NamespacedName{
+			Name: team.Status.OriginalDirector,
+		},
+		&director,
+	); err != nil {
+		return nil, err
+	}
+
+	return remoteclients.NewBOSHClient(
+		director.Spec.URL,
+		director.Spec.CACert,
+		director.Spec.UAAURL,
+		team.ClientName(),
+		string(secret.Data["secret"]),
+		director.Spec.UAACACert,
+	)
 }

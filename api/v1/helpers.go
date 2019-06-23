@@ -16,6 +16,11 @@ limitations under the License.
 
 package v1
 
+import (
+	"encoding/base32"
+	"strings"
+)
+
 func containsString(slice []string, s string) bool {
 	for _, item := range slice {
 		if item == s {
@@ -33,4 +38,12 @@ func removeString(slice []string, s string) (result []string) {
 		result = append(result, item)
 	}
 	return
+}
+
+func standardName(namespace, name string) string {
+	return strings.ToLower(
+		base32.HexEncoding.WithPadding(base32.NoPadding).EncodeToString(
+			[]byte(strings.Join([]string{namespace, name}, "/")),
+		),
+	)
 }

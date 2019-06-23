@@ -19,11 +19,6 @@ spec:
       description: Warning to display if custom resource has been mutated
       JSONPath: .status.warning
       priority: 0
-    - name: Present on Director
-      type: boolean
-      description: Indicates whether BOSH release is present on the Director
-      JSONPath: .status.presentOnDirector
-      priority: 0
     - name: URL
       type: string
       description: The URL from which the Director fetches the BOSH release

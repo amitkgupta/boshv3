@@ -1,12 +1,7 @@
-1. Tenancy
-	controllers in any namespace?
-	directors in no namespace
-	director secret references assumed for bosh-system-namespace
-	operator must put secrets in that namespace
-	controller creates team secrets in bosh-system-namespace
-	controller fetches team secrets from bosh-system-namespace
-4. MOAR BOSH concepts (see below)
-5. Docs
+1. everything remote status/availabel
+2. MOAR BOSH concepts (see below)
+3. build image, deploy
+4. Docs
 
 Remaining BOSH Concepts
 -------------
