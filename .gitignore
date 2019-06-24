@@ -24,3 +24,6 @@ bin
 
 # Ignore Mac DS_Store files
 .DS_Store
+
+# Binaries from running `go build`
+boshv3
