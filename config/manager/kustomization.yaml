@@ -1,2 +1,6 @@
 resources:
-- manager.yaml
+- bases/manager.yaml
+
+patches:
+- patches/manager_image_patch.yaml
+- patches/BOSH_SYSTEM_NAMESPACE_env_var_patch.yaml

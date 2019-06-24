@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boshv3-controller-manager
+  namespace: bosh-system
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        env:
+        - name: BOSH_SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
