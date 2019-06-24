@@ -89,7 +89,10 @@ func uaaAdminForDirector(
 	var director boshv1.Director
 	if err := c.Get(
 		ctx,
-		types.NamespacedName{Name: directorName},
+		types.NamespacedName{
+			Namespace: boshSystemNamespace,
+			Name:      directorName,
+		},
 		&director,
 	); err != nil {
 		return nil, err

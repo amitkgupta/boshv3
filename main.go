@@ -51,6 +51,7 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.Parse()
+	boshSystemNamespace := os.Getenv("BOSH_SYSTEM_NAMESPACE")
 
 	ctrl.SetLogger(zap.Logger(true))
 
@@ -65,16 +66,18 @@ func main() {
 	}
 
 	err = (&controllers.ReleaseReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Release"),
+		Client:              mgr.GetClient(),
+		Log:                 ctrl.Log.WithName("controllers").WithName("Release"),
+		BOSHSystemNamespace: boshSystemNamespace,
 	}).SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Release")
 		os.Exit(1)
 	}
 	err = (&controllers.StemcellReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Stemcell"),
+		Client:              mgr.GetClient(),
+		Log:                 ctrl.Log.WithName("controllers").WithName("Stemcell"),
+		BOSHSystemNamespace: boshSystemNamespace,
 	}).SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Stemcell")
@@ -83,7 +86,7 @@ func main() {
 	err = (&controllers.TeamReconciler{
 		Client:              mgr.GetClient(),
 		Log:                 ctrl.Log.WithName("controllers").WithName("Team"),
-		BOSHSystemNamespace: os.Getenv("BOSH_SYSTEM_NAMESPACE"),
+		BOSHSystemNamespace: boshSystemNamespace,
 	}).SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Team")

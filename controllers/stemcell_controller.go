@@ -29,7 +29,8 @@ import (
 // StemcellReconciler reconciles a Stemcell object
 type StemcellReconciler struct {
 	client.Client
-	Log logr.Logger
+	Log                 logr.Logger
+	BOSHSystemNamespace string
 }
 
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=stemcells,verbs=get;list;watch;create;update;patch;delete
@@ -48,6 +49,7 @@ func (r *StemcellReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if bc, err := boshClientForNamespace(
 		ctx,
 		r.Client,
+		r.BOSHSystemNamespace,
 		req.NamespacedName.Namespace,
 	); err != nil {
 		return ctrl.Result{}, err

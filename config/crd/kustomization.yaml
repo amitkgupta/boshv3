@@ -32,7 +32,6 @@ patches:
 - patches/additional_printer_columns_in_stemcells.yaml
 - patches/status_subresource_in_stemcells.yaml
 
-- patches/scope_cluster_in_directors.yaml
 - patches/categories_in_directors.yaml
 - patches/nonempty_spec_properties_validations_in_directors.yaml
 - patches/additional_printer_columns_in_directors.yaml

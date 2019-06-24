@@ -6,13 +6,13 @@ metadata:
     prometheus.io/scheme: https
     prometheus.io/scrape: "true"
   labels:
-    control-plane: controller-manager
+    control-plane: boshv3-controller-manager
   name: controller-manager-metrics-service
-  namespace: system
+  namespace: bosh-system
 spec:
   ports:
   - name: https
     port: 8443
     targetPort: https
   selector:
-    control-plane: controller-manager
+    control-plane: boshv3-controller-manager

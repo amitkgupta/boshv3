@@ -88,7 +88,12 @@ func reconcileWithBOSH(ctx context.Context, c client.Client, bc remoteclients.BO
 	}
 }
 
-func boshClientForNamespace(ctx context.Context, c client.Client, namespace string) (remoteclients.BOSHClient, error) {
+func boshClientForNamespace(
+	ctx context.Context,
+	c client.Client,
+	boshSystemNamespace string,
+	namespace string,
+) (remoteclients.BOSHClient, error) {
 	var teams boshv1.TeamList
 	if err := c.List(ctx, &teams, client.InNamespace(namespace)); err != nil {
 		return nil, err
@@ -120,7 +125,8 @@ func boshClientForNamespace(ctx context.Context, c client.Client, namespace stri
 	if err := c.Get(
 		ctx,
 		types.NamespacedName{
-			Name: team.Status.OriginalDirector,
+			Namespace: boshSystemNamespace,
+			Name:      team.Status.OriginalDirector,
 		},
 		&director,
 	); err != nil {
