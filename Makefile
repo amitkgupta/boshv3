@@ -33,7 +33,7 @@ docker-push:
 	docker push ${IMG}
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy:
+deploy: apply-config
 	kustomize build config/manager | kubectl apply -f -
 
 # Generate code
