@@ -17,6 +17,7 @@ limitations under the License.
 package remoteclients
 
 import (
+	"github.com/cloudfoundry/bosh-cli/cmd/config/configfakes"
 	boshdir "github.com/cloudfoundry/bosh-cli/director"
 	boshuaa "github.com/cloudfoundry/bosh-cli/uaa"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
@@ -70,6 +71,7 @@ func NewBOSHClient(
 
 	api, err := boshdir.NewFactory(logger).New(
 		directorConfig,
+		new(configfakes.FakeConfig),
 		boshdir.NewNoopTaskReporter(),
 		boshdir.NewNoopFileReporter(),
 	)
