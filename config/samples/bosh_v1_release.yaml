@@ -1,7 +1,10 @@
-apiVersion: bosh.akgupta.ca/v1
+apiVersion: "bosh.akgupta.ca/v1"
 kind: Release
 metadata:
-  name: release-sample
+  name: zookeeper-0.0.9
+  namespace: test
 spec:
-  # Add fields here
-  foo: bar
+  releaseName: "zookeeper"
+  version: "0.0.9"
+  url: "https://bosh.io/d/github.com/cppforlife/zookeeper-release?v=0.0.9"
+  sha1: "c0c7cf0111ec0941aa2243530f8d418bd892c47c"

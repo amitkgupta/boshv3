@@ -1,7 +1,10 @@
-apiVersion: bosh.akgupta.ca/v1
+apiVersion: "bosh.akgupta.ca/v1"
 kind: Stemcell
 metadata:
-  name: stemcell-sample
+  name: warden-xenial-315.41
+  namespace: test
 spec:
-  # Add fields here
-  foo: bar
+  stemcellName: "bosh-warden-boshlite-ubuntu-xenial-go_agent"
+  version: "315.41"
+  url: "https://s3.amazonaws.com/bosh-core-stemcells/315.41/bosh-stemcell-315.41-warden-boshlite-ubuntu-xenial-go_agent.tgz"
+  sha1: "35297b197426db1c9ead4d66afff47dab63a26ab"

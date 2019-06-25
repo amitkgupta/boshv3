@@ -1,23 +1,16 @@
-1. MOAR BOSH concepts (see below)
-1. Docs
-1. tests
-1. ci
-
-Remaining BOSH Concepts
--------------
-instance_groups:
+instance_groups
 	name
 	azs
 	instances (scale subr)
 	jobs
-	vm_resources:
+	vm_resources
 		cpu
 		ram
 		ephemeral_disk_size
 	vm_extensions
 	stemcell
 	persistent_disk
-	networks:
+	networks
 		name
 		static_ips
 		default
@@ -26,7 +19,7 @@ instance_groups:
 		max_in_flight
 		canary_watch_time
 
-jobs_configuration:
+jobs_configuration
 	name
 	release
 	properties
@@ -61,8 +54,6 @@ compilation (GLOBAL)
 	az
 	vm_resources
 	network
-
-----
 
 addons
 	name

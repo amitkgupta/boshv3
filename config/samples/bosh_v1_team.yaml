@@ -1,7 +1,7 @@
-apiVersion: bosh.akgupta.ca/v1
+apiVersion: "bosh.akgupta.ca/v1"
 kind: Team
 metadata:
-  name: team-sample
+  name: test
+  namespace: test
 spec:
-  # Add fields here
-  foo: bar
+  director: "vbox-admin"
