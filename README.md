@@ -280,7 +280,6 @@ The behaviour of `kubectl get stemcell` is essentially identical to the behaviou
 
 ## TODO
 
-1. Add License
 1. Un-hardcode `bosh-system` namespace
 1. Parameterize `amitkgupta` for Docker repo
 1. Tests 😂
