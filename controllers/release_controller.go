@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	boshv1 "github.com/amitkgupta/boshv3/api/v1"
+	"github.com/amitkgupta/boshv3/remote-clients"
 )
 
 // ReleaseReconciler reconciles a Release object
@@ -36,31 +37,32 @@ type ReleaseReconciler struct {
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=releases,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=releases/status,verbs=get;update;patch
 
-func (r *ReleaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *ReleaseReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
+	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
 	log := r.Log.WithValues("release", req.NamespacedName)
 
 	var release boshv1.Release
-	if err := r.Get(ctx, req.NamespacedName, &release); err != nil {
+	if err = r.Get(ctx, req.NamespacedName, &release); err != nil {
 		log.Error(err, "unable to fetch release")
-		return ctrl.Result{}, ignoreDoesNotExist(err)
+		return
 	}
 
-	if bc, err := boshClientForNamespace(
+	var bc remoteclients.BOSHClient
+	if bc, err = boshClientForNamespace(
 		ctx,
 		r.Client,
 		r.BOSHSystemNamespace,
 		req.NamespacedName.Namespace,
 	); err != nil {
-		return ctrl.Result{}, err
-	} else {
-		return ctrl.Result{}, reconcileWithBOSH(
-			ctx,
-			r.Client,
-			bc,
-			&release,
-		)
+		log.Error(err, "unable to construct BOSH client for namespace", "namespace", req.NamespacedName.Namespace)
+		return
+	} else if err = reconcileWithBOSH(ctx, r.Client, bc, &release); err != nil {
+		log.Error(err, "unable to reconcile with BOSH")
+		return
 	}
+
+	return
 }
 
 func (r *ReleaseReconciler) SetupWithManager(mgr ctrl.Manager) error {

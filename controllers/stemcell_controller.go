@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	boshv1 "github.com/amitkgupta/boshv3/api/v1"
+	"github.com/amitkgupta/boshv3/remote-clients"
 )
 
 // StemcellReconciler reconciles a Stemcell object
@@ -36,31 +37,32 @@ type StemcellReconciler struct {
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=stemcells,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=stemcells/status,verbs=get;update;patch
 
-func (r *StemcellReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *StemcellReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
+	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
 	log := r.Log.WithValues("stemcell", req.NamespacedName)
 
 	var stemcell boshv1.Stemcell
-	if err := r.Get(ctx, req.NamespacedName, &stemcell); err != nil {
+	if err = r.Get(ctx, req.NamespacedName, &stemcell); err != nil {
 		log.Error(err, "unable to fetch stemcell")
-		return ctrl.Result{}, ignoreDoesNotExist(err)
+		return
 	}
 
-	if bc, err := boshClientForNamespace(
+	var bc remoteclients.BOSHClient
+	if bc, err = boshClientForNamespace(
 		ctx,
 		r.Client,
 		r.BOSHSystemNamespace,
 		req.NamespacedName.Namespace,
 	); err != nil {
-		return ctrl.Result{}, err
-	} else {
-		return ctrl.Result{}, reconcileWithBOSH(
-			ctx,
-			r.Client,
-			bc,
-			&stemcell,
-		)
+		log.Error(err, "unable to construct BOSH client for namespace", "namespace", req.NamespacedName.Namespace)
+		return
+	} else if err = reconcileWithBOSH(ctx, r.Client, bc, &stemcell); err != nil {
+		log.Error(err, "unable to reconcile with BOSH")
+		return
 	}
+
+	return
 }
 
 func (r *StemcellReconciler) SetupWithManager(mgr ctrl.Manager) error {

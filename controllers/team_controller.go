@@ -41,37 +41,39 @@ type TeamReconciler struct {
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=teams,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=teams/status,verbs=get;update;patch
 
-func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *TeamReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
+	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
 	log := r.Log.WithValues("team", req.NamespacedName)
 
 	var team boshv1.Team
-	if err := r.Get(ctx, req.NamespacedName, &team); err != nil {
-		log.Error(err, "Unable to fetch team")
-		return ctrl.Result{}, ignoreDoesNotExist(err)
+	if err = r.Get(ctx, req.NamespacedName, &team); err != nil {
+		log.Error(err, "unable to fetch team")
+		return
 	}
 
 	if team.PrepareToSave(r.BOSHSystemNamespace) {
-		if err := r.Status().Update(ctx, &team); err != nil {
-			return ctrl.Result{}, err
+		if err = r.Status().Update(ctx, &team); err != nil {
+			log.Error(err, "unable to save team")
+			return
 		}
 	}
 
-	if uc, err := uaaAdminForDirector(
+	var uc remoteclients.UAAClient
+	if uc, err = uaaAdminForDirector(
 		ctx,
 		r.Client,
 		team.Status.OriginalDirector,
 		r.BOSHSystemNamespace,
 	); err != nil {
-		return ctrl.Result{}, err
-	} else {
-		return ctrl.Result{}, reconcileWithUAA(
-			ctx,
-			r.Client,
-			uc,
-			&team,
-		)
+		log.Error(err, "unable to construct UAA client for namespace")
+		return
+	} else if err = reconcileWithUAA(ctx, r.Client, uc, &team); err != nil {
+		log.Error(err, "unable to reconcile with UAA")
+		return
 	}
+
+	return
 }
 
 func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
