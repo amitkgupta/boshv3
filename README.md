@@ -128,12 +128,12 @@ metadata:
 spec:
   url: "https://<BOSH_ADDRESS>"
   ca_cert: # `bosh int --path /director_ssl/ca creds.yml` where `creds.yml` is the vars file generated
-  		   # when creating BOSH 
+           # when creating BOSH
   uaa_url: # "https://<BOSH_ADDRESS>:8443" if you've deployed BOSH via the official docs
   uaa_client: # "uaa_admin" if you've deployed BOSH via the official docs without major tweaks
   uaa_client_secret: <UAA_SECRET_NAME> # any name you want
   uaa_ca_cert: # `bosh int --path /uaa_ssl/ca creds.yml` where `creds.yml` is the vars file generated
-  			   # when creating BOSH
+               # when creating BOSH
     
 ```
 
@@ -311,7 +311,8 @@ the scope of this README.
 generated tests just fail out of the box.
 - The generated [samples](config/samples) are unusable and need to be modified. There doesn't seem to be
 much value from the files generated here by Kubebuilder.
-- The Makefile could be greatly streamlined. See [here](https://miro.com/app/board/o9J_kxIYNts=/).
+- The Makefile could be greatly streamlined. See
+[here](https://miro.com/app/board/o9J_kxIYNts=/?moveToWidget=3074457346709258907).
 - The directories and files in the `config` directory seem inconstent and don't work in a variety of ways.
 - Status subresources should be enabled out of the box for new CRDs, or at least enabled easily without
 repeatedly creating Kustomize overlays for each CRD.
@@ -370,7 +371,6 @@ and [Using Finalizers](https://book.kubebuilder.io/reference/using-finalizers.ht
 - `make exe` (or simply `make`) builds an executable locally and ensures the code compiles.
 - `make run` applies CRD YAML configuration files to the targetted Kubernetes cluster and runs
 the controllers as a local process interacting with the Kubernetes API.
-## License
 - `kubectl apply -f <file>` some custom resources and use `bosh` and `uaac` to check that the right things
 are happening. Consider trying out the [samples](config/samples).
 - `kubectl get bosh --all-namespaces` gives a view from the Kubernetes API perspective, which is meant to respresent the "BOSH v3 API" this project is intended to explore as a concept
