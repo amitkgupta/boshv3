@@ -13,7 +13,7 @@ exe: code fmt vet
 
 # Generate manifests e.g. CRD, RBAC etc.
 yaml: generator
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role paths="./..." output:crd:artifacts:config=config/crd/bases
 
 # Install CRDs into a cluster
 crd: yaml
