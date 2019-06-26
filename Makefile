@@ -1,9 +1,7 @@
 # Namespace where all system-level resource for BOSH v3 will be installed
-BOSH_SYSTEM_NAMESPACE ?= bosh-system
+BOSH_SYSTEM_NAMESPACE ?= "bosh-system"
 # Image URL to use all building/pushing image targets
-IMG ?= amitkgupta/boshv3-controller:latest
-# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true"
+IMG ?= "amitkgupta/boshv3-controller:latest"
 
 .PHONY: exe $(MAKECMDGOALS)
 
@@ -13,7 +11,7 @@ exe: code fmt vet
 
 # Generate manifests e.g. CRD, RBAC etc.
 yaml: generator
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) crd:trivialVersions=true rbac:roleName=manager-role paths="./..." output:crd:artifacts:config=config/crd/bases
 
 # Install CRDs into a cluster
 crd: yaml
@@ -27,7 +25,6 @@ run: exe crd
 image: exe
 	docker build . -t ${IMG}
 	@echo "updating kustomize image patch file for manager resource"
-	sed -e 's@image: .*@image: '"${IMG}"'@' -i '' ./config/manager/patches/manager_image_patch.yaml
 
 # Push the docker image to a repo
 repo:
@@ -36,7 +33,7 @@ repo:
 # Install controller and RBAC in the configured Kubernetes cluster in ~/.kube/config
 install: crd
 	kustomize build config/rbac | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
-	kustomize build config/manager | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
+	kustomize build config/manager | sed -e"s@<IMG>@${IMG}@" | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" #| kubectl apply -f -
 
 # Generate code
 code: generator

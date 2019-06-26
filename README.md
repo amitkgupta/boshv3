@@ -280,7 +280,6 @@ The behaviour of `kubectl get stemcell` is essentially identical to the behaviou
 
 ## TODO
 
-1. Parameterize `amitkgupta` for Docker repo
 1. Tests 😂
 1. Implement [more BOSH resources](remaining_bosh_resources.txt)
 1. Reproducible builds
