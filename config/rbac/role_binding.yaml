@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: bosh-system
+  namespace: <BOSH_SYSTEM_NAMESPACE>

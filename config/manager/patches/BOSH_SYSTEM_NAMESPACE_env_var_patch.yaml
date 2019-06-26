@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: boshv3-controller-manager
-  namespace: bosh-system
+  namespace: <BOSH_SYSTEM_NAMESPACE>
 spec:
   template:
     spec:

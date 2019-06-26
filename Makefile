@@ -35,8 +35,8 @@ repo:
 
 # Install controller and RBAC in the configured Kubernetes cluster in ~/.kube/config
 install: crd
-	kustomize build config/rbac | kubectl apply -f -
-	kustomize build config/manager | kubectl apply -f -
+	kustomize build config/rbac | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
+	kustomize build config/manager | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
 
 # Generate code
 code: generator

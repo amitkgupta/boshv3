@@ -124,7 +124,7 @@ apiVersion: "bosh.akgupta.ca/v1"
 kind: Director
 metadata:
   name: <DIRECTOR_NAME> # any name you want
-  namespace: bosh-system
+  namespace: <BOSH_SYSTEM_NAMESPACE> # must be the same namespace where the controller was deployed
 spec:
   url: "https://<BOSH_ADDRESS>"
   ca_cert: # `bosh int --path /director_ssl/ca creds.yml` where `creds.yml` is the vars file generated
@@ -142,7 +142,7 @@ Create a `Secret` in the BOSH system namespace with name matching `<UAA_SECRET_N
 ```
 $ kubectl create secret generic <UAA_SECRET_NAME> \
   --from-literal=secret="$(bosh int --path /uaa_admin_client_secret <PATH_TO_CREDS_YML>)" \
-  --namespace=bosh-system
+  --namespace=<BOSH_SYSTEM_NAMESPACE> # must be the same namespace where the controller was deployed
 ```
 
 When giving individual developers access to use the Kubernetes cluster, you will likely want to only give
@@ -195,7 +195,7 @@ You can inspect this resource and expect output like the following:
 ```
 $ kubectl get director --all-namespaces
 NAMESPACE     NAME         URL                    UAA CLIENT
-bosh-system   vbox-admin   https://192.168.50.6   uaa_admin
+<BOSH_SYSTEM_NAMESPACE> # must be the same namespace where the controller was deployed   vbox-admin   https://192.168.50.6   uaa_admin
 ```
 
 ### Team
@@ -280,7 +280,6 @@ The behaviour of `kubectl get stemcell` is essentially identical to the behaviou
 
 ## TODO
 
-1. Un-hardcode `bosh-system` namespace
 1. Parameterize `amitkgupta` for Docker repo
 1. Tests 😂
 1. Implement [more BOSH resources](remaining_bosh_resources.txt)
