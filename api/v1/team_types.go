@@ -109,11 +109,13 @@ func (t *Team) CreateUnlessExists(uc remoteclients.UAAClient, secretData string)
 	if present, err := uc.HasClient(t.ClientName()); err != nil {
 		return err
 	} else if !present {
-		return uc.CreateClient(
+		if err := uc.CreateClient(
 			t.ClientName(),
 			secretData,
 			[]string{"bosh.admin"}, // TODO: needed to delete releases, etc.
-		)
+		); err != nil {
+			return err
+		}
 	}
 
 	t.Status.Available = true

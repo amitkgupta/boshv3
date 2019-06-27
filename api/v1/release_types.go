@@ -109,10 +109,12 @@ func (r *Release) CreateUnlessExists(bc remoteclients.BOSHClient) error {
 	); err != nil {
 		return err
 	} else if !present {
-		return bc.UploadRelease(
+		if err := bc.UploadRelease(
 			releaseSpec.URL,
 			releaseSpec.SHA1,
-		)
+		); err != nil {
+			return err
+		}
 	}
 
 	r.Status.Available = true

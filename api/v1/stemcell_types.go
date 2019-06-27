@@ -109,10 +109,12 @@ func (s *Stemcell) CreateUnlessExists(bc remoteclients.BOSHClient) error {
 	); err != nil {
 		return err
 	} else if !present {
-		return bc.UploadStemcell(
+		if err := bc.UploadStemcell(
 			stemcellSpec.URL,
 			stemcellSpec.SHA1,
-		)
+		); err != nil {
+			return err
+		}
 	}
 
 	s.Status.Available = true
