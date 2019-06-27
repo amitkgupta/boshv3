@@ -34,8 +34,7 @@ type BOSHClient interface {
 	UploadStemcell(string, string) error
 	DeleteStemcell(string, string) error
 
-	HasVMExtension(string) (bool, error)
-	CreateVMExtension(string, json.RawMessage) error
+	CreateVMExtension(string, json.Marshaler) error
 	DeleteVMExtension(string) error
 }
 
@@ -126,14 +125,35 @@ func (c *boshClientImpl) DeleteStemcell(stemcellName, version string) error {
 	}
 }
 
-func (c *boshClientImpl) HasVMExtension(name string) (bool, error) {
-	return false, nil // TODO
-}
+func (c *boshClientImpl) CreateVMExtension(name string, cloudProperties json.Marshaler) error {
+	type vmExtension struct {
+		Name            string         `json:"name"`
+		CloudProperties json.Marshaler `json:"cloud_properties"`
+	}
 
-func (c *boshClientImpl) CreateVMExtension(name string, cloudProperties json.RawMessage) error {
-	return nil // TODO
+	cloudConfig := struct {
+		VMExtensions []vmExtension `json:"vm_extensions"`
+	}{
+		VMExtensions: []vmExtension{
+			vmExtension{Name: name, CloudProperties: cloudProperties},
+		},
+	}
+
+	bytes, err := json.Marshal(cloudConfig)
+	if err != nil {
+		return err
+	}
+
+	configDiff, err := c.api.DiffConfig("cloud", name, bytes)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.api.UpdateConfig("cloud", name, configDiff.FromId, bytes)
+	return err
 }
 
 func (c *boshClientImpl) DeleteVMExtension(name string) error {
-	return nil // TODO
+	_, err := c.api.DeleteConfig("cloud", name)
+	return err
 }

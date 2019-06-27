@@ -1,7 +1,7 @@
 apiVersion: "bosh.akgupta.ca/v1"
 kind: VMExtension
 metadata:
-  name: zookeeper-0.0.9
+  name: port-tcp-443-8443
   namespace: test
 spec:
   cloud_properties:

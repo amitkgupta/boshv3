@@ -403,8 +403,7 @@ spec:
         spec:
           properties:
             cloud_properties:
-              format: byte
-              type: string
+              type: object
           required:
           - cloud_properties
           type: object
@@ -413,8 +412,7 @@ spec:
             available:
               type: boolean
             cloud_properties:
-              format: byte
-              type: string
+              type: object
             warning:
               type: string
           required:
