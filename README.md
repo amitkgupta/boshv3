@@ -327,8 +327,8 @@ The `WARNING` column will display a warning if you have mutated the `VMExtension
 
 ## TODO
 
-1. Tests 😂
 1. Implement [more BOSH resources](remaining_bosh_resources.txt)
+1. Tests 😂
 1. Reproducible builds
 
 ## Issues

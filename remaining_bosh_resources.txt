@@ -45,10 +45,6 @@ networks
 		azs
 		cloud_properties
 
-vm_extensions
-	name
-	cloud_properties
-
 compilation (GLOBAL)
 	workers
 	az
