@@ -14,3 +14,6 @@ resources:
 - group: bosh
   version: v1
   kind: Team
+- group: bosh
+  version: v1
+  kind: VMExtension

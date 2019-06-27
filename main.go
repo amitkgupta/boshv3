@@ -26,9 +26,10 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
 	// +kubebuilder:scaffold:imports
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 var (
@@ -90,6 +91,15 @@ func main() {
 	}).SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Team")
+		os.Exit(1)
+	}
+	err = (&controllers.VMExtensionReconciler{
+		Client:              mgr.GetClient(),
+		Log:                 ctrl.Log.WithName("controllers").WithName("VMExtension"),
+		BOSHSystemNamespace: boshSystemNamespace,
+	}).SetupWithManager(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "VMExtension")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

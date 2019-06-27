@@ -17,6 +17,8 @@ limitations under the License.
 package remoteclients
 
 import (
+	"encoding/json"
+
 	"github.com/cloudfoundry/bosh-cli/cmd/config/configfakes"
 	boshdir "github.com/cloudfoundry/bosh-cli/director"
 	boshuaa "github.com/cloudfoundry/bosh-cli/uaa"
@@ -31,6 +33,10 @@ type BOSHClient interface {
 	HasStemcell(string, string) (bool, error)
 	UploadStemcell(string, string) error
 	DeleteStemcell(string, string) error
+
+	HasVMExtension(string) (bool, error)
+	CreateVMExtension(string, json.RawMessage) error
+	DeleteVMExtension(string) error
 }
 
 type boshClientImpl struct {
@@ -118,4 +124,16 @@ func (c *boshClientImpl) DeleteStemcell(stemcellName, version string) error {
 	} else {
 		return stemcell.Delete(false)
 	}
+}
+
+func (c *boshClientImpl) HasVMExtension(name string) (bool, error) {
+	return false, nil // TODO
+}
+
+func (c *boshClientImpl) CreateVMExtension(name string, cloudProperties json.RawMessage) error {
+	return nil // TODO
+}
+
+func (c *boshClientImpl) DeleteVMExtension(name string) error {
+	return nil // TODO
 }
