@@ -86,7 +86,8 @@ exactly one `Director`. A developer would create a `Team` in his or her namespac
 scoped to a dedicated tenant within that BOSH Director as represented by the namespace's `Team`. Currently,
 creating one of these resources creates a client in the referenced Director's UAA and in theory it would
 just have admin access within a BOSH Team generated for this purpose. There should be at most one `Team`
-per namespace. Multiple `Team`s can refer to the same `Director`. `Team`s cannot be mutated. Deleting a `Team` custom resource will delete the client from the corresponding BOSH Director's UAA (and the Kubernetes
+per namespace. Multiple `Team`s can refer to the same `Director`. `Team`s cannot be mutated. Deleting a `Team`
+custom resource will delete the client from the corresponding BOSH Director's UAA (and the Kubernetes
 `Secret` resource that is dynamically created to store the UAA client secret).
 
 ### Release
@@ -95,7 +96,8 @@ The `Release` kind of resource provided by the `releases.bosh.akgupta.ca` CRD re
 that can be uploaded to the Director. Creating one of these resources requires providing a URL for the
 BOSH release. This release will be uploaded via the `Team` in the same namespace where the `Release`
 resource has been created. The link between a `Release` and a `Team` is implicit by virtue of being in the
-same namespace. `Release`s cannot be mutated. Deleting a `Release` custom resource will delete the release from the corresponding BOSH Director.
+same namespace. `Release`s cannot be mutated. Deleting a `Release` custom resource will delete the release from
+the corresponding BOSH Director.
 
 ### Stemcell
 
@@ -103,7 +105,19 @@ The `Stemcell` kind of resource provided by the `stemcells.bosh.akgupta.ca` CRD 
 that can be uploaded to the Director. Creating one of these resources requires providing a URL for the
 BOSH stemcell. This stemcell will be uploaded via the `Team` in the same namespace where the `Stemcell`
 resource has been created. The link between a `Stemcell` and a `Team` is implicit by virtue of being in the
-same namespace.  `Stemcell`s cannot be mutated. Deleting a `Stemcell` custom resource will delete the stemcell from the corresponding BOSH Director.
+same namespace.  `Stemcell`s cannot be mutated. Deleting a `Stemcell` custom resource will delete the stemcell
+from the corresponding BOSH Director.
+
+### VM Extension
+
+The `VMExtension` kind of resource provided by the `vmextensions.bosh.akgupta.ca` CRD represents VM extensions
+that traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic "Cloud Config"
+and treats VM Extensions as their own, first-class resource. These will be referenceable by name within
+Instance Groups (not yet implemented). Creating one of these VM Extension resources requires simply providing
+`cloud_properties`. This VM extension will be created via the `Team` in the same namespace where the `VMExtension`
+resource has been created. The link between a `VMExtension` and a `Team` is implicit by virtue of being in the
+same namespace.  `VMExtension`s cannot be mutated. Deleting a `VMExtension` custom resource will delete it from
+from the corresponding BOSH Director.
 
 ## Usage
 
@@ -167,7 +181,8 @@ spec:
   director: <DIRECTOR_NAME>
 ```
 
-You simply need to ensure that `<DIRECTOR_NAME>` matches one of the available `Director` resources offered by the cluster administrator.
+You simply need to ensure that `<DIRECTOR_NAME>` matches one of the available `Director` resources offered by
+the cluster administrator.
 
 Once you have a `Team` in your namespace you can manage BOSH resources like stemcells and releases by
 creating corresponding custom resources in your namespace. See below on detailed specifications for each
@@ -262,8 +277,11 @@ test        zookeeper-0.0.9   zookeeper      0.0.9     true
 ```
 
 The `AVAILABLE` column will show `false` if the Director has not been successfully fetched the release.
-The `WARNING` column will display a warning if you have mutated the `Release` spec after initial creation. The `RELEASE NAME` and `VERSION` columns display the originally provided values and these are the values that will continue to be used. If you do attempt to mutate the `Release` resource, you can see your
-(ignored) user-provided values with the `-o wide` flag, along with the original values and (ignored, possibly-muted) subsequent user-provided values for URL and SHA1.
+The `WARNING` column will display a warning if you have mutated the `Release` spec after initial creation. The
+`RELEASE NAME` and `VERSION` columns display the originally provided values and these are the values that will
+continue to be used. If you do attempt to mutate the `Release` resource, you can see your (ignored) user-provided
+values with the `-o wide` flag, along with the original values and (ignored, possibly-muted) subsequent
+user-provided values for URL and SHA1.
 
 ### Stemcell
 
@@ -276,7 +294,36 @@ spec:
   sha1: # SHA1 checksum of the BOSH stemcell artifact for the Director to confirm
 ```
 
-The behaviour of `kubectl get stemcell` is essentially identical to the behaviour for `kubectl get release` described in the previous sub-section.
+The behaviour of `kubectl get stemcell` is essentially identical to the behaviour for `kubectl get release`
+described in the previous sub-section.
+
+### VM Extension
+
+```
+kind: VMExtension
+spec:
+  cloud_properties:
+    # YAML or JSON of CPI-specific Cloud Properties for VM extensions
+```
+
+You can inspect this resource and expect output like the following:
+
+```
+$ kubectl get vmextension --all-namespaces
+NAMESPACE   NAME                AVAILABLE   WARNING
+test        port-tcp-443-8443   false
+```
+
+This is what you'll see before the Director has completed fetching the release. After it has, you'll see:
+
+```
+$ kubectl get release --all-namespaces
+NAMESPACE   NAME                AVAILABLE   WARNING
+test        port-tcp-443-8443   true
+```
+
+The `AVAILABLE` column will show `false` if the cloud-type config hasn't been successfully posted to the Director.
+The `WARNING` column will display a warning if you have mutated the `VMExtension` spec after initial creation.
 
 ## TODO
 
@@ -353,7 +400,7 @@ of the tasks in the Makefile and their relationships to one another is available
 To create new CRDs and/or reconciliation controllers for managing BOSH resources, use
 
 ```
-$ kubebuilder create api
+$ make KIND=<SomeKind> api
 ```
 
 You will need to update code and YAML templates in the `api`, `config`, and `controllers` subdirectories.
@@ -365,12 +412,13 @@ and [Using Finalizers](https://book.kubebuilder.io/reference/using-finalizers.ht
 
 ### Build, Run, and Test
 
-- `make exe` (or simply `make`) builds an executable locally and ensures the code compiles.
+- `make` generates code and YAML, and builds an executable locally, ensuring that the code compiles.
 - `make run` applies CRD YAML configuration files to the targetted Kubernetes cluster and runs
 the controllers as a local process interacting with the Kubernetes API.
 - `kubectl apply -f <file>` some custom resources and use `bosh` and `uaac` to check that the right things
 are happening. Consider trying out the [samples](config/samples).
-- `kubectl get bosh --all-namespaces` gives a view from the Kubernetes API perspective, which is meant to respresent the "BOSH v3 API" this project is intended to explore as a concept
+- `kubectl get bosh --all-namespaces` gives a view from the Kubernetes API perspective, which is meant to
+respresent the "BOSH v3 API" this project is intended to explore as a concept
 
 ### Publish, Deploy, and Test
 
@@ -379,6 +427,10 @@ are happening. Consider trying out the [samples](config/samples).
 configurations for deploying the controllers to the Kubernetes cluster with the published Docker image and 
 authorizing them via RBAC policies to function properly.
 - Test things out same as above.
+
+### Document
+
+- Update the relevant sections in this README and add a workable example in `config/samples`.
 
 ## License
 
