@@ -5,6 +5,8 @@ IMG ?= "amitkgupta/boshv3-controller:latest"
 
 .PHONY: exe $(MAKECMDGOALS)
 
+all: yaml exe
+
 # Build local executable
 exe: code fmt vet
 	go build
@@ -55,3 +57,6 @@ CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+api:
+	[[ ! -z "${KIND}" ]] && kubebuilder create api --controller --example=false --group=bosh --kind="${KIND}" --resource --version=v1 || false
