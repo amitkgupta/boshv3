@@ -119,6 +119,16 @@ resource has been created. The link between a `VMExtension` and a `Team` is impl
 same namespace.  `VMExtension`s cannot be mutated. Deleting a `VMExtension` custom resource will delete it from
 from the corresponding BOSH Director.
 
+### AZ
+
+The `AZ` kind of resource provided by the `azs.bosh.akgupta.ca` CRD represents AZs (Availability Zones) that
+traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic "Cloud Config" and
+treats AZs as their own, first-class resource. These will be referenceable by name within Instance Groups (not
+yet implemented). Creating one of these AZ resources requires simply providing `cloud_properties`. This AZ will
+be created via the `Team` in the same namespace where the `AZ` resource has been created. The link between an
+`AZ` and a `Team` is implicit by virtue of being in the same namespace.  `AZ`s cannot be mutated. Deleting an
+`AZ` custom resource will delete it from from the corresponding BOSH Director.
+
 ## Usage
 
 ### As an Administrator
@@ -324,6 +334,18 @@ test        port-tcp-443-8443   true
 
 The `AVAILABLE` column will show `false` if the cloud-type config hasn't been successfully posted to the Director.
 The `WARNING` column will display a warning if you have mutated the `VMExtension` spec after initial creation.
+
+### AZ
+
+```
+kind: AZ
+spec:
+  cloud_properties:
+    # YAML or JSON of CPI-specific Cloud Properties for AZs
+```
+
+The behaviour of `kubectl get az` is essentially identical to the behaviour for `kubectl get vmextension`
+described in the previous sub-section.
 
 ## TODO
 

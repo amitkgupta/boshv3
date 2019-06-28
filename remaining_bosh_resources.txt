@@ -29,10 +29,6 @@ variables
 	type
 	options
 
-azs
-	name
-	cloud_properties
-
 networks
 	name
 	type
