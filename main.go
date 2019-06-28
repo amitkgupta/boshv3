@@ -102,6 +102,15 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "VMExtension")
 		os.Exit(1)
 	}
+	err = (&controllers.AZReconciler{
+		Client:              mgr.GetClient(),
+		Log:                 ctrl.Log.WithName("controllers").WithName("AZ"),
+		BOSHSystemNamespace: boshSystemNamespace,
+	}).SetupWithManager(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "AZ")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

@@ -9,6 +9,26 @@ rules:
 - apiGroups:
   - bosh.akgupta.ca
   resources:
+  - azs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
+  - azs/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
   - releases
   verbs:
   - get

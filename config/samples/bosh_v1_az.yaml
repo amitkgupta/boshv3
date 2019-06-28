@@ -1,0 +1,7 @@
+apiVersion: "bosh.akgupta.ca/v1"
+kind: AZ
+metadata:
+  name: az1
+  namespace: test
+spec:
+  cloud_properties: {}

@@ -7,6 +7,7 @@ resources:
 - bases/bosh.akgupta.ca_directors.yaml
 - bases/bosh.akgupta.ca_teams.yaml
 - bases/bosh.akgupta.ca_vmextensions.yaml
+- bases/bosh.akgupta.ca_azs.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
@@ -32,3 +33,7 @@ patches:
 - patches/categories_in_vmextensions.yaml
 - patches/additional_printer_columns_in_vmextensions.yaml
 - patches/status_subresource_in_vmextensions.yaml
+
+- patches/categories_in_azs.yaml
+- patches/additional_printer_columns_in_azs.yaml
+- patches/status_subresource_in_azs.yaml

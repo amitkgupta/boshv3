@@ -17,3 +17,6 @@ resources:
 - group: bosh
   version: v1
   kind: VMExtension
+- group: bosh
+  version: v1
+  kind: AZ

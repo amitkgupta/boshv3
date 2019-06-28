@@ -36,6 +36,9 @@ type BOSHClient interface {
 
 	CreateVMExtension(string, json.Marshaler) error
 	DeleteVMExtension(string) error
+
+	CreateAZ(string, json.Marshaler) error
+	DeleteAZ(string) error
 }
 
 type boshClientImpl struct {
@@ -125,20 +128,57 @@ func (c *boshClientImpl) DeleteStemcell(stemcellName, version string) error {
 	}
 }
 
+type az struct {
+	Name            string         `json:"name"`
+	CloudProperties json.Marshaler `json:"cloud_properties"`
+}
+
+type vmExtension struct {
+	Name            string         `json:"name"`
+	CloudProperties json.Marshaler `json:"cloud_properties"`
+}
+
+type cloudConfig struct {
+	AZs          []az          `json:"azs,omitempty"`
+	VMExtensions []vmExtension `json:"vm_extensions,omitempty"`
+}
+
 func (c *boshClientImpl) CreateVMExtension(name string, cloudProperties json.Marshaler) error {
-	type vmExtension struct {
-		Name            string         `json:"name"`
-		CloudProperties json.Marshaler `json:"cloud_properties"`
-	}
-
-	cloudConfig := struct {
-		VMExtensions []vmExtension `json:"vm_extensions"`
-	}{
-		VMExtensions: []vmExtension{
-			vmExtension{Name: name, CloudProperties: cloudProperties},
+	return c.updateCloudConfig(
+		name,
+		cloudConfig{
+			VMExtensions: []vmExtension{vmExtension{
+				Name:            name,
+				CloudProperties: cloudProperties,
+			}},
 		},
-	}
+	)
+}
 
+func (c *boshClientImpl) DeleteVMExtension(name string) error {
+	return c.deleteCloudConfig(name)
+}
+
+func (c *boshClientImpl) CreateAZ(name string, cloudProperties json.Marshaler) error {
+	return c.updateCloudConfig(
+		name,
+		cloudConfig{
+			AZs: []az{az{
+				Name:            name,
+				CloudProperties: cloudProperties,
+			}},
+		},
+	)
+}
+
+func (c *boshClientImpl) DeleteAZ(name string) error {
+	return c.deleteCloudConfig(name)
+}
+
+func (c *boshClientImpl) updateCloudConfig(
+	name string,
+	cloudConfig cloudConfig,
+) error {
 	bytes, err := json.Marshal(cloudConfig)
 	if err != nil {
 		return err
@@ -153,7 +193,7 @@ func (c *boshClientImpl) CreateVMExtension(name string, cloudProperties json.Mar
 	return err
 }
 
-func (c *boshClientImpl) DeleteVMExtension(name string) error {
+func (c *boshClientImpl) deleteCloudConfig(name string) error {
 	_, err := c.api.DeleteConfig("cloud", name)
 	return err
 }
