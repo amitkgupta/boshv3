@@ -53,7 +53,6 @@ func main() {
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.Parse()
 	boshSystemNamespace := os.Getenv("BOSH_SYSTEM_NAMESPACE")
-	if boshSystemNamespace != "bosh-system" { panic(err) }
 
 	ctrl.SetLogger(zap.Logger(true))
 
