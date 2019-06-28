@@ -1,7 +1,7 @@
 # Namespace where all system-level resource for BOSH v3 will be installed
-BOSH_SYSTEM_NAMESPACE ?= "bosh-system"
+BOSH_SYSTEM_NAMESPACE ?= bosh-system
 # Image URL to use all building/pushing image targets
-IMG ?= "amitkgupta/boshv3-controller:latest"
+REPO ?= amitkgupta/boshv3-controller
 
 .PHONY: exe $(MAKECMDGOALS)
 
@@ -24,17 +24,17 @@ run: exe crd
 	BOSH_SYSTEM_NAMESPACE="${BOSH_SYSTEM_NAMESPACE}" ./boshv3
 
 # Build the docker image
-image: exe
-	docker build . -t ${IMG}
+image: exe tag
+	docker build . -t "${REPO}:${TAG}"
 
 # Push the docker image to a repo
-repo:
-	docker push ${IMG}
+repo: tag
+	docker push "${REPO}:${TAG}"
 
 # Install controller and RBAC in the configured Kubernetes cluster in ~/.kube/config
 install: crd
 	kustomize build config/rbac | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
-	kustomize build config/manager | sed -e"s@<IMG>@${IMG}@" | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
+	kustomize build config/manager | sed -e"s@<IMG>@${REPO}:${TAG}@" | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
 
 # Generate code
 code: generator
@@ -59,3 +59,6 @@ endif
 
 api:
 	[[ ! -z "${KIND}" ]] && kubebuilder create api --controller --example=false --group=bosh --kind="${KIND}" --resource --version=v1 || false
+
+tag:
+TAG=$(shell git rev-parse --short HEAD)
