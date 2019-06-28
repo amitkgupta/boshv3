@@ -26,7 +26,6 @@ run: exe crd
 # Build the docker image
 image: exe
 	docker build . -t ${IMG}
-	@echo "updating kustomize image patch file for manager resource"
 
 # Push the docker image to a repo
 repo:
