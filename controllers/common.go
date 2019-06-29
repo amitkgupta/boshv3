@@ -21,6 +21,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/go-logr/logr"
+
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -54,57 +56,33 @@ type uaaEntity interface {
 	DeleteIfExists(remoteclients.UAAClient) error
 }
 
-func reconcileWithBOSH(ctx context.Context, c client.Client, bc remoteclients.BOSHClient, ba boshArtifact) error {
-	if ba.BeingDeleted() {
-		if err := ba.DeleteIfExists(bc); err != nil {
-			return err
-		}
-
-		if ba.EnsureNoFinalizer() {
-			if err := c.Update(ctx, ba); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
-	if ba.PrepareToSave() {
-		if err := c.Status().Update(ctx, ba); err != nil {
-			return err
-		}
-	}
-
-	if ba.EnsureFinalizer() {
-		if err := c.Update(ctx, ba); err != nil {
-			return err
-		}
-	}
-
-	if err := ba.CreateUnlessExists(bc); err != nil {
-		return err
-	} else {
-		return c.Status().Update(ctx, ba)
-	}
-}
-
 func boshClientForNamespace(
 	ctx context.Context,
+	log logr.Logger,
 	c client.Client,
 	boshSystemNamespace string,
 	namespace string,
 ) (remoteclients.BOSHClient, error) {
+	log = log.WithValues("namespace", namespace, "bosh_system_namespace", boshSystemNamespace)
+
 	var teams boshv1.TeamList
 	if err := c.List(ctx, &teams, client.InNamespace(namespace)); err != nil {
+		log.Error(err, "failed to list teams")
 		return nil, err
 	}
 
 	if len(teams.Items) == 0 {
-		return nil, errors.New(fmt.Sprintf("No team assigned to '%s' namespace", namespace))
+		msg := "No team assigned to namespace"
+		err := errors.New(msg)
+		log.Error(err, msg)
+		return nil, err
 	}
 
 	if len(teams.Items) > 1 {
-		return nil, errors.New(fmt.Sprintf("Detected %d teams in '%s' namespace", len(teams.Items), namespace))
+		msg := fmt.Sprintf("Found %d teams in namespace", len(teams.Items))
+		err := errors.New(msg)
+		log.Error(err, msg)
+		return nil, err
 	}
 
 	team := teams.Items[0]
@@ -118,6 +96,12 @@ func boshClientForNamespace(
 		},
 		&secret,
 	); err != nil {
+		log.Error(
+			err,
+			"failed to get secret",
+			"secret", team.SecretName(),
+			"secret_namespace", team.SecretNamespace(),
+		)
 		return nil, err
 	}
 
@@ -130,6 +114,7 @@ func boshClientForNamespace(
 		},
 		&director,
 	); err != nil {
+		log.Error(err, "failed to get director")
 		return nil, err
 	}
 
@@ -141,4 +126,54 @@ func boshClientForNamespace(
 		string(secret.Data["secret"]),
 		director.Spec.UAACACert,
 	)
+}
+
+func reconcileWithBOSH(
+	ctx context.Context,
+	log logr.Logger,
+	c client.Client,
+	bc remoteclients.BOSHClient,
+	ba boshArtifact,
+) error {
+	if ba.BeingDeleted() {
+		if err := ba.DeleteIfExists(bc); err != nil {
+			log.Error(err, "failed to delete if exists in BOSH")
+			return err
+		}
+
+		if ba.EnsureNoFinalizer() {
+			if err := c.Update(ctx, ba); err != nil {
+				log.Error(err, "failed to updated after ensuring no finalizer")
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if ba.PrepareToSave() {
+		if err := c.Status().Update(ctx, ba); err != nil {
+			log.Error(err, "failed to updated after preparing to save")
+			return err
+		}
+	}
+
+	if ba.EnsureFinalizer() {
+		if err := c.Update(ctx, ba); err != nil {
+			log.Error(err, "failed to update after ensuring finalizer")
+			return err
+		}
+	}
+
+	if err := ba.CreateUnlessExists(bc); err != nil {
+		log.Error(err, "failed to create unless exists in BOSH")
+		return err
+	}
+
+	if err := c.Status().Update(ctx, ba); err != nil {
+		log.Error(err, "failed to update after creating unless exits in BOSH")
+		return err
+	}
+
+	return nil
 }

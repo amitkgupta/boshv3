@@ -62,13 +62,14 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) 
 	var uc remoteclients.UAAClient
 	if uc, err = uaaAdminForDirector(
 		ctx,
+		log,
 		r.Client,
 		team.Status.OriginalDirector,
 		r.BOSHSystemNamespace,
 	); err != nil {
 		log.Error(err, "unable to construct UAA client for namespace")
 		return
-	} else if err = reconcileWithUAA(ctx, r.Client, uc, &team); err != nil {
+	} else if err = reconcileWithUAA(ctx, log, r.Client, uc, &team); err != nil {
 		log.Error(err, "unable to reconcile with UAA")
 		return
 	}
@@ -84,10 +85,13 @@ func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func uaaAdminForDirector(
 	ctx context.Context,
+	log logr.Logger,
 	c client.Client,
 	directorName string,
 	boshSystemNamespace string,
 ) (remoteclients.UAAClient, error) {
+	log = log.WithValues("director", directorName, "namespace", boshSystemNamespace)
+
 	var director boshv1.Director
 	if err := c.Get(
 		ctx,
@@ -97,6 +101,7 @@ func uaaAdminForDirector(
 		},
 		&director,
 	); err != nil {
+		log.Error(err, "failed to get director")
 		return nil, err
 	}
 
@@ -109,6 +114,7 @@ func uaaAdminForDirector(
 		},
 		&directorSecret,
 	); err != nil {
+		log.Error(err, "failed to create secret", "secret", director.Spec.UAAClientSecret)
 		return nil, err
 	}
 
@@ -122,12 +128,14 @@ func uaaAdminForDirector(
 
 func reconcileWithUAA(
 	ctx context.Context,
+	log logr.Logger,
 	c client.Client,
 	uc remoteclients.UAAClient,
 	ue uaaEntity,
 ) error {
 	if ue.BeingDeleted() {
 		if err := ue.DeleteIfExists(uc); err != nil {
+			log.Error(err, "failed to delete if exists in UAA")
 			return err
 		}
 
@@ -137,11 +145,13 @@ func reconcileWithUAA(
 				Namespace: ue.SecretNamespace(),
 			},
 		})); ignoreDoesNotExist(err) != nil {
+			log.Error(err, "failed to delete secret", "secret", ue.SecretName(), "namespace", ue.SecretNamespace())
 			return err
 		}
 
 		if ue.EnsureNoFinalizer() {
 			if err := c.Update(ctx, ue); err != nil {
+				log.Error(err, "failed to update after ensuring no finalizer")
 				return err
 			}
 		}
@@ -151,6 +161,7 @@ func reconcileWithUAA(
 
 	if ue.EnsureFinalizer() {
 		if err := c.Update(ctx, ue); err != nil {
+			log.Error(err, "failed to update after ensuring finalizer")
 			return err
 		}
 	}
@@ -165,12 +176,19 @@ func reconcileWithUAA(
 		StringData: map[string]string{"secret": secretData},
 	}
 	if err := c.Create(ctx, &secret); ignoreAlreadyExists(err) != nil {
+		log.Error(err, "failed to create secret", "secret", ue.SecretName(), "namespace", ue.SecretNamespace())
 		return err
 	}
 
 	if err := ue.CreateUnlessExists(uc, secretData); err != nil {
+		log.Error(err, "failed to create unless exists in UAA")
 		return err
-	} else {
-		return c.Status().Update(ctx, ue)
 	}
+
+	if err := c.Status().Update(ctx, ue); err != nil {
+		log.Error(err, "failed to update after creating unless exists in UAA")
+		return err
+	}
+
+	return nil
 }

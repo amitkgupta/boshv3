@@ -51,13 +51,14 @@ func (r *AZReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
 	var bc remoteclients.BOSHClient
 	if bc, err = boshClientForNamespace(
 		ctx,
+		log,
 		r.Client,
 		r.BOSHSystemNamespace,
 		req.NamespacedName.Namespace,
 	); err != nil {
 		log.Error(err, "unable to construct BOSH client for namespace", "namespace", req.NamespacedName.Namespace)
 		return
-	} else if err = reconcileWithBOSH(ctx, r.Client, bc, &az); err != nil {
+	} else if err = reconcileWithBOSH(ctx, log, r.Client, bc, &az); err != nil {
 		log.Error(err, "unable to reconcile with BOSH")
 		return
 	}
