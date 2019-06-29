@@ -112,7 +112,7 @@ func (t *Team) CreateUnlessExists(uc remoteclients.UAAClient, secretData string)
 		if err := uc.CreateClient(
 			t.ClientName(),
 			secretData,
-			[]string{"bosh.admin"}, // TODO: needed to delete releases, etc.
+			[]string{"bosh.admin"},
 		); err != nil {
 			return err
 		}
