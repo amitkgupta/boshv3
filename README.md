@@ -57,10 +57,7 @@ $ git show -s --oneline --no-decorate
 8af402f Bumping uaa to version 64.0
 
 $ minikube version
-minikube version: v1.1.1
-
-$ minikube config view
-- host-only-cidr: 192.168.50.0/24
+minikube version: v1.2.0
 ```
 
 ## Concepts
