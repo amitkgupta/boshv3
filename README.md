@@ -362,8 +362,6 @@ only be one of them per namespace).
 - More generally, would more flexible, in-code validations for custom resources without the heavyweight
 need to implement webhooks.
 - Would like to enforce immutability of some/all fields in a custom resource spec.
-- Supplying the `--watch` flag to `kubectl get` commands for CRDs loses all the additional printer columns
-configured for the CRD. This has apparently been fixed in Kubernetes 1.15.
 
 Larger architectural concerns and concerns related to the developer experience for creating CRDs are outside
 the scope of this README.
