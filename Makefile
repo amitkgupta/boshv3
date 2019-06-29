@@ -57,8 +57,5 @@ else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
 
-api:
-	[[ ! -z "${KIND}" ]] && kubebuilder create api --controller --example=false --group=bosh --kind="${KIND}" --resource --version=v1 || false
-
 tag:
 TAG=$(shell git rev-parse --short HEAD)

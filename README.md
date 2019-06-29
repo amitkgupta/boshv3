@@ -415,10 +415,11 @@ of the tasks in the Makefile and their relationships to one another is available
 
 ### Creating a new API
 
-To create new CRDs and/or reconciliation controllers for managing BOSH resources, use
+To create new CRDs and reconciliation controllers for managing BOSH resources, use
 
 ```
-$ make KIND=<SomeKind> api
+$ kubebuilder create api --controller --example=false --group=bosh --kind=<SomeKind> --resource --version=v1
+
 ```
 
 You will need to update code and YAML templates in the `api`, `config`, and `controllers` subdirectories.
@@ -427,6 +428,11 @@ learning some of the requisite concepts in a practical way. See especially the s
 [Designing an API](https://book.kubebuilder.io/cronjob-tutorial/api-design.html), 
 [Implementing a controller](https://book.kubebuilder.io/cronjob-tutorial/controller-implementation.html),
 and [Using Finalizers](https://book.kubebuilder.io/reference/using-finalizers.html).
+
+NOTE: Replace the `--controller` flag with `--controller=false` or the `--resource` flag with `--resource=false`
+if you don't need a reconciliation controller or don't need a CRD, respectively. For example, the `Director`
+kind of resource does not need reconciliation, it just needs to be referenceable from `Team`s, so it was
+created with `--controller=false` in the above `kubebuilder` command.
 
 ### Build, Run, and Test
 
