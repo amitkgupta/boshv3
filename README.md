@@ -1,4 +1,4 @@
-# Title
+# BOSH v3 API (theoretical)
 
 [![license](https://img.shields.io/github/license/amitkgupta/boshv3.svg)](LICENSE)
 
