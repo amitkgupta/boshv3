@@ -350,6 +350,7 @@ described in the previous sub-section.
 ## TODO
 
 1. Implement [more BOSH resources](remaining_bosh_resources.txt)
+1. Make better secrets
 1. Tests 😂
 1. Reproducible builds
 
