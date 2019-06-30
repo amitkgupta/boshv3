@@ -1,3 +1,19 @@
+compilation (GLOBAL)
+	workers
+	az
+	vm_resources
+	network
+
+variables
+	name
+	type
+	options
+
+jobs_configuration
+	name
+	release
+	properties
+
 instance_groups
 	name
 	azs
@@ -18,22 +34,6 @@ instance_groups
 		canaries
 		max_in_flight
 		canary_watch_time
-
-jobs_configuration
-	name
-	release
-	properties
-
-variables
-	name // must start with '/'
-	type
-	options
-
-compilation (GLOBAL)
-	workers
-	az
-	vm_resources
-	network
 
 addons
 	name
