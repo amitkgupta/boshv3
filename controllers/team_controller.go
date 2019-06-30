@@ -116,7 +116,7 @@ func uaaAdminForDirector(
 		},
 		&directorSecret,
 	); err != nil {
-		log.Error(err, "failed to create secret", "secret", director.Spec.UAAClientSecret)
+		log.Error(err, "failed to get secret", "secret", director.Spec.UAAClientSecret)
 		return nil, err
 	}
 
