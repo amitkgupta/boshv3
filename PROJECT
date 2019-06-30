@@ -20,3 +20,6 @@ resources:
 - group: bosh
   version: v1
   kind: AZ
+- group: bosh
+  version: v1
+  kind: Network

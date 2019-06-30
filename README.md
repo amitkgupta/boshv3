@@ -126,6 +126,18 @@ be created via the `Team` in the same namespace where the `AZ` resource has been
 `AZ` and a `Team` is implicit by virtue of being in the same namespace.  `AZ`s cannot be mutated. Deleting an
 `AZ` custom resource will delete it from from the corresponding BOSH Director.
 
+### Network
+
+The `Network` kind of resource provided by the `networks.bosh.akgupta.ca` CRD represents networks that
+traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic "Cloud Config" and
+treats networks as their own, first-class resource. These will be referenceable by name within Instance Groups
+(not yet implemented). Creating one of these network resources involves specifying various properties (see
+[specification](#network-1) below), one of which is `subnets`. Each `subnet` in turn references a list of `azs`
+by name. These names should match the names of `AZ`s created within the same namespace. This network will be
+created via the `Team` in the same namespace where the `Network` resource has been created. The link between a
+`Network` and a `Team` is implicit by virtue of being in the same namespace. `Network`s cannot be mutated.
+Deleting an `Network` custom resource will delete it from from the corresponding BOSH Director.
+
 ## Usage
 
 ### As an Administrator
@@ -321,7 +333,7 @@ NAMESPACE   NAME                AVAILABLE   WARNING
 test        port-tcp-443-8443   false
 ```
 
-This is what you'll see before the Director has completed fetching the release. After it has, you'll see:
+The above is what you'll see before the Director has received the Cloud Config. After it has, you'll see:
 
 ```
 $ kubectl get release --all-namespaces
@@ -343,6 +355,42 @@ spec:
 
 The behaviour of `kubectl get az` is essentially identical to the behaviour for `kubectl get vmextension`
 described in the previous sub-section.
+
+### Network
+
+```
+kind: Network
+spec:
+  type: # One of "manual", "dynamic", or "vip"
+  subnets:
+    - azs: # Array of strings referencing names of AZ resources in the same namespace
+      dns: # Array of IPs of DNS nameservers
+      gateway: # Gateway IP string
+      range: # CIDR range string
+      reserved: # Array of IP or IP range strings that should not be assigned to instances
+      static: # Array of IP or IP range strings
+      cloud_properties: # YAML or JSON of CPI-specific Cloud Properties for subnets
+    - ...
+```
+
+You can inspect this resource and expect output like the following:
+
+```
+$ kubectl get network --all-namespaces
+NAMESPACE   NAME   TYPE     AVAILABLE   WARNING
+test        nw1    manual   false
+```
+
+The above is what you'll see before the Director has received the Cloud Config. After it has, you'll see:
+
+```
+$ kubectl get network --all-namespaces
+NAMESPACE   NAME   TYPE     AVAILABLE   WARNING
+test        nw1    manual   true
+```
+
+The `AVAILABLE` column will show `false` if the cloud-type config hasn't been successfully posted to the Director.
+The `WARNING` column will display a warning if you have mutated the `Network` spec after initial creation.
 
 ## TODO
 

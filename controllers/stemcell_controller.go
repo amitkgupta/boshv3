@@ -58,7 +58,9 @@ func (r *StemcellReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err err
 	); err != nil {
 		log.Error(err, "unable to construct BOSH client for namespace", "namespace", req.NamespacedName.Namespace)
 		return
-	} else if err = reconcileWithBOSH(ctx, log, r.Client, bc, &stemcell); err != nil {
+	}
+
+	if err = reconcileWithBOSH(ctx, log, r.Client, bc, &stemcell); err != nil {
 		log.Error(err, "unable to reconcile with BOSH")
 		return
 	}

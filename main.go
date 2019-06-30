@@ -111,6 +111,15 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "AZ")
 		os.Exit(1)
 	}
+	err = (&controllers.NetworkReconciler{
+		Client:              mgr.GetClient(),
+		Log:                 ctrl.Log.WithName("controllers").WithName("Network"),
+		BOSHSystemNamespace: boshSystemNamespace,
+	}).SetupWithManager(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Network")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

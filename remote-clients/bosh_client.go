@@ -23,6 +23,8 @@ import (
 	boshdir "github.com/cloudfoundry/bosh-cli/director"
 	boshuaa "github.com/cloudfoundry/bosh-cli/uaa"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
+
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type BOSHClient interface {
@@ -39,6 +41,9 @@ type BOSHClient interface {
 
 	CreateAZ(string, json.Marshaler) error
 	DeleteAZ(string) error
+
+	CreateNetwork(string, Network) error
+	DeleteNetwork(string) error
 }
 
 type boshClientImpl struct {
@@ -138,9 +143,26 @@ type vmExtension struct {
 	CloudProperties json.Marshaler `json:"cloud_properties"`
 }
 
+type Network struct {
+	Name    string   `json:"name"`
+	Type    string   `json:"type"`
+	Subnets []Subnet `json:"subnets"`
+}
+
+type Subnet struct {
+	Range           string                `json:"range"`
+	Gateway         string                `json:"gateway"`
+	DNS             []string              `json:"dns"`
+	Reserved        []string              `json:"reserved"`
+	Static          []string              `json:"static"`
+	AZs             []string              `json:"azs"`
+	CloudProperties *runtime.RawExtension `json:"cloud_properties,omitempty"`
+}
+
 type cloudConfig struct {
 	AZs          []az          `json:"azs,omitempty"`
 	VMExtensions []vmExtension `json:"vm_extensions,omitempty"`
+	Networks     []Network     `json:"networks,omitempty"`
 }
 
 func (c *boshClientImpl) CreateVMExtension(name string, cloudProperties json.Marshaler) error {
@@ -172,6 +194,19 @@ func (c *boshClientImpl) CreateAZ(name string, cloudProperties json.Marshaler) e
 }
 
 func (c *boshClientImpl) DeleteAZ(name string) error {
+	return c.deleteCloudConfig(name)
+}
+
+func (c *boshClientImpl) CreateNetwork(name string, network Network) error {
+	return c.updateCloudConfig(
+		name,
+		cloudConfig{
+			Networks: []Network{network},
+		},
+	)
+}
+
+func (c *boshClientImpl) DeleteNetwork(name string) error {
 	return c.deleteCloudConfig(name)
 }
 

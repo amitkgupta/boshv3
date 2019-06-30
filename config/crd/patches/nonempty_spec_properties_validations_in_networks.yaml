@@ -1,0 +1,40 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: networks.bosh.akgupta.ca
+spec:
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            type:
+              type: string
+              enum: ["manual", "dynamic", "vip"]
+            subnets:
+              type: array
+              items:
+                type: object
+                properties:
+                  range:
+                    type: string
+                    minLength: 1
+                  gateway:
+                    type: string
+                    minLength: 1
+                  dns:
+                    type: array
+                    items:
+                      type: string
+                  static:
+                    type: array
+                    items:
+                      type: string
+                  reserved:
+                    type: array
+                    items:
+                      type: string
+                  azs:
+                    type: array
+                    items:
+                      type: string

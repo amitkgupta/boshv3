@@ -17,9 +17,11 @@ limitations under the License.
 package v1
 
 import (
+	"context"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/amitkgupta/boshv3/remote-clients"
 )
@@ -54,13 +56,13 @@ type Release struct {
 	Status ReleaseStatus `json:"status,omitempty"`
 }
 
-func (r *Release) BeingDeleted() bool {
+func (r Release) BeingDeleted() bool {
 	return !r.ObjectMeta.DeletionTimestamp.IsZero()
 }
 
 var releaseFinalizer = strings.Join([]string{"release", finalizerBase}, ".")
 
-func (r *Release) hasFinalizer() bool {
+func (r Release) hasFinalizer() bool {
 	return containsString(r.ObjectMeta.Finalizers, releaseFinalizer)
 }
 
@@ -100,7 +102,11 @@ func (r *Release) PrepareToSave() (needsStatusUpdate bool) {
 	return
 }
 
-func (r *Release) CreateUnlessExists(bc remoteclients.BOSHClient) error {
+func (r *Release) CreateUnlessExists(
+	bc remoteclients.BOSHClient,
+	_ context.Context,
+	_ client.Client,
+) error {
 	releaseSpec := r.Status.OriginalSpec
 
 	if present, err := bc.HasRelease(
@@ -122,7 +128,7 @@ func (r *Release) CreateUnlessExists(bc remoteclients.BOSHClient) error {
 	return nil
 }
 
-func (r *Release) DeleteIfExists(bc remoteclients.BOSHClient) error {
+func (r Release) DeleteIfExists(bc remoteclients.BOSHClient) error {
 	releaseSpec := r.Status.OriginalSpec
 
 	if present, err := bc.HasRelease(

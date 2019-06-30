@@ -17,10 +17,12 @@ limitations under the License.
 package v1
 
 import (
+	"context"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/amitkgupta/boshv3/remote-clients"
 )
@@ -51,13 +53,13 @@ type AZ struct {
 	Status AZStatus `json:"status,omitempty"`
 }
 
-func (a *AZ) BeingDeleted() bool {
+func (a AZ) BeingDeleted() bool {
 	return !a.ObjectMeta.DeletionTimestamp.IsZero()
 }
 
 var azFinalizer = strings.Join([]string{"az", finalizerBase}, ".")
 
-func (a *AZ) hasFinalizer() bool {
+func (a AZ) hasFinalizer() bool {
 	return containsString(a.ObjectMeta.Finalizers, azFinalizer)
 }
 
@@ -94,7 +96,7 @@ func (a *AZ) PrepareToSave() (needsStatusUpdate bool) {
 	return
 }
 
-func (a *AZ) InternalName() string {
+func (a AZ) InternalName() string {
 	return strings.Join([]string{
 		"az",
 		a.ObjectMeta.Namespace,
@@ -102,7 +104,11 @@ func (a *AZ) InternalName() string {
 	}, "-")
 }
 
-func (a *AZ) CreateUnlessExists(bc remoteclients.BOSHClient) error {
+func (a *AZ) CreateUnlessExists(
+	bc remoteclients.BOSHClient,
+	_ context.Context,
+	_ client.Client,
+) error {
 	if err := bc.CreateAZ(
 		a.InternalName(),
 		a.Status.OriginalCloudProperties,
@@ -115,7 +121,7 @@ func (a *AZ) CreateUnlessExists(bc remoteclients.BOSHClient) error {
 	return nil
 }
 
-func (a *AZ) DeleteIfExists(bc remoteclients.BOSHClient) error {
+func (a AZ) DeleteIfExists(bc remoteclients.BOSHClient) error {
 	return bc.DeleteAZ(a.InternalName())
 }
 

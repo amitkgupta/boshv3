@@ -29,18 +29,6 @@ variables
 	type
 	options
 
-networks
-	name
-	type
-	subnets
-		range
-		gateway
-		dns
-		reserved
-		static
-		azs
-		cloud_properties
-
 compilation (GLOBAL)
 	workers
 	az

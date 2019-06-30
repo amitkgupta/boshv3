@@ -27,24 +27,24 @@ import (
 	"github.com/amitkgupta/boshv3/remote-clients"
 )
 
-// AZReconciler reconciles a AZ object
-type AZReconciler struct {
+// NetworkReconciler reconciles a Network object
+type NetworkReconciler struct {
 	client.Client
 	Log                 logr.Logger
 	BOSHSystemNamespace string
 }
 
-// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=azs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=azs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=networks,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=networks/status,verbs=get;update;patch
 
-func (r *AZReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
+func (r *NetworkReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
 	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
-	log := r.Log.WithValues("az", req.NamespacedName)
+	log := r.Log.WithValues("network", req.NamespacedName)
 
-	var az boshv1.AZ
-	if err = r.Get(ctx, req.NamespacedName, &az); err != nil {
-		log.Error(err, "unable to fetch AZ")
+	var network boshv1.Network
+	if err = r.Get(ctx, req.NamespacedName, &network); err != nil {
+		log.Error(err, "unable to fetch Network")
 		return
 	}
 
@@ -60,7 +60,7 @@ func (r *AZReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
 		return
 	}
 
-	if err = reconcileWithBOSH(ctx, log, r.Client, bc, &az); err != nil {
+	if err = reconcileWithBOSH(ctx, log, r.Client, bc, &network); err != nil {
 		log.Error(err, "unable to reconcile with BOSH")
 		return
 	}
@@ -68,8 +68,8 @@ func (r *AZReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
 	return
 }
 
-func (r *AZReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *NetworkReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&boshv1.AZ{}).
+		For(&boshv1.Network{}).
 		Complete(r)
 }

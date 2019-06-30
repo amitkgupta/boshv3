@@ -1,0 +1,17 @@
+apiVersion: "bosh.akgupta.ca/v1"
+kind: Network
+metadata:
+  name: nw1
+  namespace: test
+spec:
+  type: "manual"
+  subnets:
+    - azs:
+      - az1
+      dns:
+      - 8.8.8.8
+      gateway: 10.244.1.1
+      range: 10.244.1.0/24
+      reserved: []
+      static:
+      - 10.244.1.34

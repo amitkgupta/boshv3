@@ -69,7 +69,9 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) 
 	); err != nil {
 		log.Error(err, "unable to construct UAA client for namespace")
 		return
-	} else if err = reconcileWithUAA(ctx, log, r.Client, uc, &team); err != nil {
+	}
+
+	if err = reconcileWithUAA(ctx, log, r.Client, uc, &team); err != nil {
 		log.Error(err, "unable to reconcile with UAA")
 		return
 	}

@@ -51,13 +51,13 @@ type Team struct {
 	Status TeamStatus `json:"status,omitempty"`
 }
 
-func (t *Team) BeingDeleted() bool {
+func (t Team) BeingDeleted() bool {
 	return !t.ObjectMeta.DeletionTimestamp.IsZero()
 }
 
 var teamFinalizer = strings.Join([]string{"team", finalizerBase}, ".")
 
-func (t *Team) hasFinalizer() bool {
+func (t Team) hasFinalizer() bool {
 	return containsString(t.ObjectMeta.Finalizers, teamFinalizer)
 }
 
@@ -93,15 +93,15 @@ func (t *Team) PrepareToSave(secretNamespace string) (needsStatusUpdate bool) {
 	return
 }
 
-func (t *Team) ClientName() string {
+func (t Team) ClientName() string {
 	return standardName(t.ObjectMeta.Name, t.ObjectMeta.Namespace)
 }
 
-func (t *Team) SecretName() string {
+func (t Team) SecretName() string {
 	return standardName(t.ObjectMeta.Name, t.ObjectMeta.Namespace)
 }
 
-func (t *Team) SecretNamespace() string {
+func (t Team) SecretNamespace() string {
 	return t.Status.SecretNamespace
 }
 
@@ -123,7 +123,7 @@ func (t *Team) CreateUnlessExists(uc remoteclients.UAAClient, secretData string)
 	return nil
 }
 
-func (t *Team) DeleteIfExists(uc remoteclients.UAAClient) error {
+func (t Team) DeleteIfExists(uc remoteclients.UAAClient) error {
 	if present, err := uc.HasClient(t.ClientName()); err != nil {
 		return err
 	} else if present {

@@ -17,9 +17,11 @@ limitations under the License.
 package v1
 
 import (
+	"context"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/amitkgupta/boshv3/remote-clients"
 )
@@ -54,13 +56,13 @@ type Stemcell struct {
 	Status StemcellStatus `json:"status,omitempty"`
 }
 
-func (s *Stemcell) BeingDeleted() bool {
+func (s Stemcell) BeingDeleted() bool {
 	return !s.ObjectMeta.DeletionTimestamp.IsZero()
 }
 
 var stemcellFinalizer = strings.Join([]string{"stemcell", finalizerBase}, ".")
 
-func (s *Stemcell) hasFinalizer() bool {
+func (s Stemcell) hasFinalizer() bool {
 	return containsString(s.ObjectMeta.Finalizers, stemcellFinalizer)
 }
 
@@ -100,7 +102,11 @@ func (s *Stemcell) PrepareToSave() (needsStatusUpdate bool) {
 	return
 }
 
-func (s *Stemcell) CreateUnlessExists(bc remoteclients.BOSHClient) error {
+func (s *Stemcell) CreateUnlessExists(
+	bc remoteclients.BOSHClient,
+	_ context.Context,
+	_ client.Client,
+) error {
 	stemcellSpec := s.Status.OriginalSpec
 
 	if present, err := bc.HasStemcell(
@@ -122,7 +128,7 @@ func (s *Stemcell) CreateUnlessExists(bc remoteclients.BOSHClient) error {
 	return nil
 }
 
-func (s *Stemcell) DeleteIfExists(bc remoteclients.BOSHClient) error {
+func (s Stemcell) DeleteIfExists(bc remoteclients.BOSHClient) error {
 	stemcellSpec := s.Status.OriginalSpec
 
 	if present, err := bc.HasStemcell(

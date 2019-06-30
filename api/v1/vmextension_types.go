@@ -17,10 +17,12 @@ limitations under the License.
 package v1
 
 import (
+	"context"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/amitkgupta/boshv3/remote-clients"
 )
@@ -52,13 +54,13 @@ type VMExtension struct {
 	Status VMExtensionStatus `json:"status,omitempty"`
 }
 
-func (v *VMExtension) BeingDeleted() bool {
+func (v VMExtension) BeingDeleted() bool {
 	return !v.ObjectMeta.DeletionTimestamp.IsZero()
 }
 
 var vmExtensionFinalizer = strings.Join([]string{"vm-extension", finalizerBase}, ".")
 
-func (v *VMExtension) hasFinalizer() bool {
+func (v VMExtension) hasFinalizer() bool {
 	return containsString(v.ObjectMeta.Finalizers, vmExtensionFinalizer)
 }
 
@@ -95,7 +97,7 @@ func (v *VMExtension) PrepareToSave() (needsStatusUpdate bool) {
 	return
 }
 
-func (v *VMExtension) InternalName() string {
+func (v VMExtension) InternalName() string {
 	return strings.Join([]string{
 		"vmextension",
 		v.ObjectMeta.Namespace,
@@ -103,7 +105,11 @@ func (v *VMExtension) InternalName() string {
 	}, "-")
 }
 
-func (v *VMExtension) CreateUnlessExists(bc remoteclients.BOSHClient) error {
+func (v *VMExtension) CreateUnlessExists(
+	bc remoteclients.BOSHClient,
+	_ context.Context,
+	_ client.Client,
+) error {
 	if err := bc.CreateVMExtension(
 		v.InternalName(),
 		v.Status.OriginalCloudProperties,
@@ -116,7 +122,7 @@ func (v *VMExtension) CreateUnlessExists(bc remoteclients.BOSHClient) error {
 	return nil
 }
 
-func (v *VMExtension) DeleteIfExists(bc remoteclients.BOSHClient) error {
+func (v VMExtension) DeleteIfExists(bc remoteclients.BOSHClient) error {
 	return bc.DeleteVMExtension(v.InternalName())
 }
 

@@ -42,7 +42,7 @@ type boshArtifact interface {
 	runtime.Object
 	extensional
 	PrepareToSave() bool
-	CreateUnlessExists(remoteclients.BOSHClient) error
+	CreateUnlessExists(remoteclients.BOSHClient, context.Context, client.Client) error
 	DeleteIfExists(remoteclients.BOSHClient) error
 }
 
@@ -165,7 +165,7 @@ func reconcileWithBOSH(
 		}
 	}
 
-	if err := ba.CreateUnlessExists(bc); err != nil {
+	if err := ba.CreateUnlessExists(bc, ctx, c); err != nil {
 		log.Error(err, "failed to create unless exists in BOSH")
 		return err
 	}
