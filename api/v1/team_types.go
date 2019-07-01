@@ -52,24 +52,24 @@ type Team struct {
 }
 
 func (t Team) BeingDeleted() bool {
-	return !t.ObjectMeta.DeletionTimestamp.IsZero()
+	return !t.GetDeletionTimestamp().IsZero()
 }
 
 var teamFinalizer = strings.Join([]string{"team", finalizerBase}, ".")
 
 func (t Team) hasFinalizer() bool {
-	return containsString(t.ObjectMeta.Finalizers, teamFinalizer)
+	return containsString(t.GetFinalizers(), teamFinalizer)
 }
 
 func (t *Team) EnsureFinalizer() bool {
 	changed := !t.hasFinalizer()
-	t.ObjectMeta.Finalizers = append(t.ObjectMeta.Finalizers, teamFinalizer)
+	t.SetFinalizers(append(t.GetFinalizers(), teamFinalizer))
 	return changed
 }
 
 func (t *Team) EnsureNoFinalizer() bool {
 	changed := t.hasFinalizer()
-	t.ObjectMeta.Finalizers = removeString(t.ObjectMeta.Finalizers, teamFinalizer)
+	t.SetFinalizers(removeString(t.GetFinalizers(), teamFinalizer))
 	return changed
 }
 
@@ -94,11 +94,11 @@ func (t *Team) PrepareToSave(secretNamespace string) (needsStatusUpdate bool) {
 }
 
 func (t Team) ClientName() string {
-	return standardName(t.ObjectMeta.Name, t.ObjectMeta.Namespace)
+	return standardName(t.GetName(), t.GetNamespace())
 }
 
 func (t Team) SecretName() string {
-	return standardName(t.ObjectMeta.Name, t.ObjectMeta.Namespace)
+	return standardName(t.GetName(), t.GetNamespace())
 }
 
 func (t Team) SecretNamespace() string {

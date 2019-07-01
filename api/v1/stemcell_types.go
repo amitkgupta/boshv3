@@ -57,24 +57,24 @@ type Stemcell struct {
 }
 
 func (s Stemcell) BeingDeleted() bool {
-	return !s.ObjectMeta.DeletionTimestamp.IsZero()
+	return !s.GetDeletionTimestamp().IsZero()
 }
 
 var stemcellFinalizer = strings.Join([]string{"stemcell", finalizerBase}, ".")
 
 func (s Stemcell) hasFinalizer() bool {
-	return containsString(s.ObjectMeta.Finalizers, stemcellFinalizer)
+	return containsString(s.GetFinalizers(), stemcellFinalizer)
 }
 
 func (s *Stemcell) EnsureFinalizer() bool {
 	changed := !s.hasFinalizer()
-	s.ObjectMeta.Finalizers = append(s.ObjectMeta.Finalizers, stemcellFinalizer)
+	s.SetFinalizers(append(s.GetFinalizers(), stemcellFinalizer))
 	return changed
 }
 
 func (s *Stemcell) EnsureNoFinalizer() bool {
 	changed := s.hasFinalizer()
-	s.ObjectMeta.Finalizers = removeString(s.ObjectMeta.Finalizers, stemcellFinalizer)
+	s.SetFinalizers(removeString(s.GetFinalizers(), stemcellFinalizer))
 	return changed
 }
 

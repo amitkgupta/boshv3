@@ -57,24 +57,24 @@ type Release struct {
 }
 
 func (r Release) BeingDeleted() bool {
-	return !r.ObjectMeta.DeletionTimestamp.IsZero()
+	return !r.GetDeletionTimestamp().IsZero()
 }
 
 var releaseFinalizer = strings.Join([]string{"release", finalizerBase}, ".")
 
 func (r Release) hasFinalizer() bool {
-	return containsString(r.ObjectMeta.Finalizers, releaseFinalizer)
+	return containsString(r.GetFinalizers(), releaseFinalizer)
 }
 
 func (r *Release) EnsureFinalizer() bool {
 	changed := !r.hasFinalizer()
-	r.ObjectMeta.Finalizers = append(r.ObjectMeta.Finalizers, releaseFinalizer)
+	r.SetFinalizers(append(r.GetFinalizers(), releaseFinalizer))
 	return changed
 }
 
 func (r *Release) EnsureNoFinalizer() bool {
 	changed := r.hasFinalizer()
-	r.ObjectMeta.Finalizers = removeString(r.ObjectMeta.Finalizers, releaseFinalizer)
+	r.SetFinalizers(removeString(r.GetFinalizers(), releaseFinalizer))
 	return changed
 }
 

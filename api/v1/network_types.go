@@ -165,24 +165,24 @@ type Network struct {
 }
 
 func (n Network) BeingDeleted() bool {
-	return !n.ObjectMeta.DeletionTimestamp.IsZero()
+	return !n.GetDeletionTimestamp().IsZero()
 }
 
 var networkFinalizer = strings.Join([]string{"network", finalizerBase}, ".")
 
 func (n Network) hasFinalizer() bool {
-	return containsString(n.ObjectMeta.Finalizers, networkFinalizer)
+	return containsString(n.GetFinalizers(), networkFinalizer)
 }
 
 func (n *Network) EnsureFinalizer() bool {
 	changed := !n.hasFinalizer()
-	n.ObjectMeta.Finalizers = append(n.ObjectMeta.Finalizers, networkFinalizer)
+	n.SetFinalizers(append(n.GetFinalizers(), networkFinalizer))
 	return changed
 }
 
 func (n *Network) EnsureNoFinalizer() bool {
 	changed := n.hasFinalizer()
-	n.ObjectMeta.Finalizers = removeString(n.ObjectMeta.Finalizers, networkFinalizer)
+	n.SetFinalizers(removeString(n.GetFinalizers(), networkFinalizer))
 	return changed
 }
 
@@ -210,8 +210,8 @@ func (n *Network) PrepareToSave() (needsStatusUpdate bool) {
 func (n Network) InternalName() string {
 	return strings.Join([]string{
 		"network",
-		n.ObjectMeta.Namespace,
-		n.ObjectMeta.Name,
+		n.GetNamespace(),
+		n.GetName(),
 	}, "-")
 }
 
@@ -258,7 +258,7 @@ func (n Network) resolveReferences(ctx context.Context, c client.Client) (remote
 			if err := c.Get(
 				ctx,
 				types.NamespacedName{
-					Namespace: n.ObjectMeta.Namespace,
+					Namespace: n.GetNamespace(),
 					Name:      a,
 				},
 				&az,

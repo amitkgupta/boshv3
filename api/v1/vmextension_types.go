@@ -55,24 +55,24 @@ type VMExtension struct {
 }
 
 func (v VMExtension) BeingDeleted() bool {
-	return !v.ObjectMeta.DeletionTimestamp.IsZero()
+	return !v.GetDeletionTimestamp().IsZero()
 }
 
 var vmExtensionFinalizer = strings.Join([]string{"vm-extension", finalizerBase}, ".")
 
 func (v VMExtension) hasFinalizer() bool {
-	return containsString(v.ObjectMeta.Finalizers, vmExtensionFinalizer)
+	return containsString(v.GetFinalizers(), vmExtensionFinalizer)
 }
 
 func (v *VMExtension) EnsureFinalizer() bool {
 	changed := !v.hasFinalizer()
-	v.ObjectMeta.Finalizers = append(v.ObjectMeta.Finalizers, vmExtensionFinalizer)
+	v.SetFinalizers(append(v.GetFinalizers(), vmExtensionFinalizer))
 	return changed
 }
 
 func (v *VMExtension) EnsureNoFinalizer() bool {
 	changed := v.hasFinalizer()
-	v.ObjectMeta.Finalizers = removeString(v.ObjectMeta.Finalizers, vmExtensionFinalizer)
+	v.SetFinalizers(removeString(v.GetFinalizers(), vmExtensionFinalizer))
 	return changed
 }
 
@@ -100,8 +100,8 @@ func (v *VMExtension) PrepareToSave() (needsStatusUpdate bool) {
 func (v VMExtension) InternalName() string {
 	return strings.Join([]string{
 		"vmextension",
-		v.ObjectMeta.Namespace,
-		v.ObjectMeta.Name,
+		v.GetNamespace(),
+		v.GetName(),
 	}, "-")
 }
 

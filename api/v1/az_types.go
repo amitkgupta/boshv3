@@ -54,24 +54,24 @@ type AZ struct {
 }
 
 func (a AZ) BeingDeleted() bool {
-	return !a.ObjectMeta.DeletionTimestamp.IsZero()
+	return !a.GetDeletionTimestamp().IsZero()
 }
 
 var azFinalizer = strings.Join([]string{"az", finalizerBase}, ".")
 
 func (a AZ) hasFinalizer() bool {
-	return containsString(a.ObjectMeta.Finalizers, azFinalizer)
+	return containsString(a.GetFinalizers(), azFinalizer)
 }
 
 func (a *AZ) EnsureFinalizer() bool {
 	changed := !a.hasFinalizer()
-	a.ObjectMeta.Finalizers = append(a.ObjectMeta.Finalizers, azFinalizer)
+	a.SetFinalizers(append(a.GetFinalizers(), azFinalizer))
 	return changed
 }
 
 func (a *AZ) EnsureNoFinalizer() bool {
 	changed := a.hasFinalizer()
-	a.ObjectMeta.Finalizers = removeString(a.ObjectMeta.Finalizers, azFinalizer)
+	a.SetFinalizers(removeString(a.GetFinalizers(), azFinalizer))
 	return changed
 }
 
@@ -99,8 +99,8 @@ func (a *AZ) PrepareToSave() (needsStatusUpdate bool) {
 func (a AZ) InternalName() string {
 	return strings.Join([]string{
 		"az",
-		a.ObjectMeta.Namespace,
-		a.ObjectMeta.Name,
+		a.GetNamespace(),
+		a.GetName(),
 	}, "-")
 }
 
