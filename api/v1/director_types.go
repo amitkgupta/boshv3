@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"strings"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -48,6 +50,34 @@ type Director struct {
 
 	Spec   DirectorSpec   `json:"spec,omitempty"`
 	Status DirectorStatus `json:"status,omitempty"`
+}
+
+func (d Director) Team() Team {
+	return Team{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      d.teamName(),
+			Namespace: d.GetNamespace(),
+			OwnerReferences: []metav1.OwnerReference{
+				metav1.OwnerReference{
+					UID: d.GetUID(),
+				},
+			},
+		},
+		Spec: TeamSpec{
+			Director: d.GetName(),
+		},
+	}
+}
+
+func (d Director) teamName() string {
+	return strings.Join(
+		[]string{
+			"director",
+			d.GetName(),
+			"team",
+		},
+		"-",
+	)
 }
 
 // +kubebuilder:object:root=true
