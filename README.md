@@ -394,6 +394,8 @@ The `WARNING` column will display a warning if you have mutated the `Network` sp
 
 ## TODO
 
+1. non-dir/non-team resources can specify team or not -- if not specified, uses current behaviour
+1. document new director controller behaviour (concepts/usage/spec)
 1. Implement [more BOSH resources](remaining_bosh_resources.txt)
 1. Make better secrets
 1. Tests 😂
@@ -410,6 +412,7 @@ only be one of them per namespace).
 - More generally, would more flexible, in-code validations for custom resources without the heavyweight
 need to implement webhooks.
 - Would like to enforce immutability of some/all fields in a custom resource spec.
+- Would like to have foreground propogation policy be default so director-teams can automatically be GC'd
 
 Larger architectural concerns and concerns related to the developer experience for creating CRDs are outside
 the scope of this README.

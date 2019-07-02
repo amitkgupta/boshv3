@@ -38,13 +38,13 @@ type AZReconciler struct {
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=azs/status,verbs=get;update;patch
 
 func (r *AZReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
-	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
 	log := r.Log.WithValues("az", req.NamespacedName)
 
 	var az boshv1.AZ
 	if err = r.Get(ctx, req.NamespacedName, &az); err != nil {
 		log.Error(err, "unable to fetch AZ")
+		err = ignoreDoesNotExist(err)
 		return
 	}
 

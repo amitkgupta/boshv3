@@ -38,13 +38,13 @@ type NetworkReconciler struct {
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=networks/status,verbs=get;update;patch
 
 func (r *NetworkReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
-	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
 	log := r.Log.WithValues("network", req.NamespacedName)
 
 	var network boshv1.Network
 	if err = r.Get(ctx, req.NamespacedName, &network); err != nil {
 		log.Error(err, "unable to fetch Network")
+		err = ignoreDoesNotExist(err)
 		return
 	}
 

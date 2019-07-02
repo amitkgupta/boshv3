@@ -38,13 +38,13 @@ type VMExtensionReconciler struct {
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=vmextensions/status,verbs=get;update;patch
 
 func (r *VMExtensionReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
-	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
 	log := r.Log.WithValues("vm_extension", req.NamespacedName)
 
 	var vmExtension boshv1.VMExtension
 	if err = r.Get(ctx, req.NamespacedName, &vmExtension); err != nil {
 		log.Error(err, "unable to fetch VM extension")
+		err = ignoreDoesNotExist(err)
 		return
 	}
 

@@ -38,13 +38,13 @@ type ReleaseReconciler struct {
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=releases/status,verbs=get;update;patch
 
 func (r *ReleaseReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
-	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
 	log := r.Log.WithValues("release", req.NamespacedName)
 
 	var release boshv1.Release
 	if err = r.Get(ctx, req.NamespacedName, &release); err != nil {
 		log.Error(err, "unable to fetch release")
+		err = ignoreDoesNotExist(err)
 		return
 	}
 

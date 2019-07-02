@@ -38,13 +38,13 @@ type StemcellReconciler struct {
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=stemcells/status,verbs=get;update;patch
 
 func (r *StemcellReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
-	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
 	log := r.Log.WithValues("stemcell", req.NamespacedName)
 
 	var stemcell boshv1.Stemcell
 	if err = r.Get(ctx, req.NamespacedName, &stemcell); err != nil {
 		log.Error(err, "unable to fetch stemcell")
+		err = ignoreDoesNotExist(err)
 		return
 	}
 

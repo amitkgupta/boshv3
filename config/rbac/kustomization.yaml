@@ -10,4 +10,4 @@ patchesJson6902:
     version: v1
     kind: ClusterRole
     name: manager-role
-  path: add_director_and_secret_permissions_to_manager_role.yaml
+  path: add_secret_permissions_to_manager_role.yaml

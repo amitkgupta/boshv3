@@ -42,13 +42,13 @@ type TeamReconciler struct {
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=teams/status,verbs=get;update;patch
 
 func (r *TeamReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
-	defer func() { err = ignoreDoesNotExist(err) }()
 	ctx := context.Background()
 	log := r.Log.WithValues("team", req.NamespacedName)
 
 	var team boshv1.Team
 	if err = r.Get(ctx, req.NamespacedName, &team); err != nil {
 		log.Error(err, "unable to fetch team")
+		err = ignoreDoesNotExist(err)
 		return
 	}
 
@@ -141,12 +141,12 @@ func reconcileWithUAA(
 			return err
 		}
 
-		if err := c.Delete(ctx, &(v1.Secret{
+		if err := ignoreDoesNotExist(c.Delete(ctx, &(v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      ue.SecretName(),
 				Namespace: ue.SecretNamespace(),
 			},
-		})); ignoreDoesNotExist(err) != nil {
+		}))); err != nil {
 			log.Error(err, "failed to delete secret", "secret", ue.SecretName(), "namespace", ue.SecretNamespace())
 			return err
 		}
@@ -177,7 +177,7 @@ func reconcileWithUAA(
 		Type:       v1.SecretTypeOpaque,
 		StringData: map[string]string{"secret": secretData},
 	}
-	if err := c.Create(ctx, &secret); ignoreAlreadyExists(err) != nil {
+	if err := ignoreAlreadyExists(c.Create(ctx, &secret)); err != nil {
 		log.Error(err, "failed to create secret", "secret", ue.SecretName(), "namespace", ue.SecretNamespace())
 		return err
 	}

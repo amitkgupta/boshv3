@@ -57,11 +57,6 @@ func (d Director) Team() Team {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      d.teamName(),
 			Namespace: d.GetNamespace(),
-			OwnerReferences: []metav1.OwnerReference{
-				metav1.OwnerReference{
-					UID: d.GetUID(),
-				},
-			},
 		},
 		Spec: TeamSpec{
 			Director: d.GetName(),
@@ -78,6 +73,28 @@ func (d Director) teamName() string {
 		},
 		"-",
 	)
+}
+
+func (d Director) BeingDeleted() bool {
+	return !d.GetDeletionTimestamp().IsZero()
+}
+
+var directorFinalizer = strings.Join([]string{"director", finalizerBase}, ".")
+
+func (d Director) hasFinalizer() bool {
+	return containsString(d.GetFinalizers(), directorFinalizer)
+}
+
+func (d *Director) EnsureFinalizer() bool {
+	changed := !d.hasFinalizer()
+	d.SetFinalizers(append(d.GetFinalizers(), directorFinalizer))
+	return changed
+}
+
+func (d *Director) EnsureNoFinalizer() bool {
+	changed := d.hasFinalizer()
+	d.SetFinalizers(removeString(d.GetFinalizers(), directorFinalizer))
+	return changed
 }
 
 // +kubebuilder:object:root=true
