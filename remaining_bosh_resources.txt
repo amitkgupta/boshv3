@@ -1,23 +1,20 @@
-compilation (GLOBAL)
+1. compilation (GLOBAL)
 	workers
 	az
 	vm_resources
 	network
 
-variables
-	name
-	type
-	options
-
-jobs_configuration
+2. jobs_configuration
 	name
 	release
 	properties
+	provides ???
+	consumes ???
 
-instance_groups
+3. instance_groups
 	name
 	azs
-	instances (scale subr)
+	instances
 	jobs
 	vm_resources
 		cpu
@@ -35,7 +32,16 @@ instance_groups
 		max_in_flight
 		canary_watch_time
 
-addons
+4. errands?
+
+5. IGs scale subr???
+
+6. variables
+	name
+	type
+	options
+
+7. addons
 	name
 	job
 	include

@@ -394,8 +394,11 @@ The `WARNING` column will display a warning if you have mutated the `Network` sp
 
 ## TODO
 
+1. split up docs
+1. fix clone, install, docker, repo, tag, branch flow stuff...
 1. non-dir/non-team resources can specify team or not -- if not specified, uses current behaviour
 1. document new director controller behaviour (concepts/usage/spec)
+1. document larger CRD concerns
 1. Implement [more BOSH resources](remaining_bosh_resources.txt)
 1. Make better secrets
 1. Tests 😂
