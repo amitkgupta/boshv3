@@ -19,9 +19,8 @@ BOSH could be like.
 - [Concepts](#concepts)
 - [Usage](#usage)
 - [Specification](#specification)
-- [TODO](#todo)
-- [Issues](#issues)
 - [Development](#development)
+- [Issues](#issues)
 - [License](#license)
 
 ## Install
@@ -43,12 +42,10 @@ You can install this locally using [minikube](https://github.com/kubernetes/mini
 [BOSH Lite](https://bosh.io/docs/bosh-lite/) to run Kubernetes and BOSH, respectively, on your local
 workstation as VMs using [VirtualBox](https://www.virtualbox.org/).
 
-This has been tested to work with the following configurations:
+This has been tested to work with the following versions:
 
 ```
-$ cd ~/workspace/bosh-deployment
-
-$ git show -s --oneline --no-decorate
+$ git -C ~/workspace/bosh-deployment/ show -s --oneline --no-decorate
 8af402f Bumping uaa to version 64.0
 
 $ minikube version
@@ -64,7 +61,7 @@ Server Version: v1.15.0
 This project allows you to create and manage custom resources through Kubernetes which map to various
 concepts in BOSH. The following assumes the reader is already fairly familiar with BOSH concepts, and
 provides a high-level explanation of the kinds of custom resources offered, what they map to in the BOSH
-world, and how they relate to one another:
+world, and how they relate to one another.
 
 ### Director
 
@@ -391,62 +388,6 @@ test        nw1    manual   true
 The `AVAILABLE` column will show `false` if the cloud-type config hasn't been successfully posted to the Director.
 The `WARNING` column will display a warning if you have mutated the `Network` spec after initial creation.
 
-## TODO
-
-1. split up docs
-1. non-dir/non-team resources can specify team or not -- if not specified, uses current behaviour
-1. document new director controller behaviour (concepts/usage/spec)
-1. document larger CRD concerns
-1. Implement [more BOSH resources](remaining_bosh_resources.txt)
-1. Reproducible builds
-
-## Issues
-
-### CRDs
-
-- Would like to set OwnerReferences to resources in other namespaces or cluster-scoped resources so that
-child resources can be automatically garbage-collected.
-- Would like to be able to easily enforce validations (e.g. some resource is a singleton and there can
-only be one of them per namespace).
-- More generally, would more flexible, in-code validations for custom resources without the heavyweight
-need to implement webhooks.
-- Would like to enforce immutability of some/all fields in a custom resource spec.
-- Would like to have foreground propogation policy be default so director-teams can automatically be GC'd
-
-Larger architectural concerns and concerns related to the developer experience for creating CRDs are outside
-the scope of this README.
-
-### Kubebuilder
-
-- Creating cluster-scoped (as opposed to namespace-scoped) CRDs doesn't seem to work well, e.g.
-`kubebuilder create api --namespaced=false` doesn't seem to do the expected thing, and if it did, the 
-generated tests just fail out of the box.
-- The generated [samples](config/samples) are unusable and need to be modified. There doesn't seem to be
-much value from the files generated here by Kubebuilder.
-- The Makefile could be greatly streamlined. See
-[here](https://miro.com/app/board/o9J_kxIYNts=/?moveToWidget=3074457346709258907).
-- The directories and files in the `config` directory seem inconstent and don't work in a variety of ways.
-- Status subresources should be enabled out of the box for new CRDs, or at least enabled easily without
-repeatedly creating Kustomize overlays for each CRD.
-
-### BOSH
-
-- UAA clients require `bosh.admin` scope to delete releases and stemcells, even though they just need
-`bosh.stemcells.upload` and `bosh.releases.upload` to upload them. Better fine-grained permissions in BOSH
-would be very nice.
-- In the same vein, scoping BOSH resources to teams would be nice. This project provides a facade where it
-appears each Kubernetes namespace has a separate BOSH team and custom resources representing BOSH resources
-are created in individual namespaces where they appear scoped to an individual BOSH team, but they are in
-reality global resources in BOSH and prone to collision.
-- The `config cmdconf.Config` argument to `director.Factory#New` in the
-[`BOSH CLI codebase`](https://github.com/cloudfoundry/bosh-cli/blob/7850ac985726c614f8ecba726ae8c0d17b08ad7f/director/factory.go#L29)
-is unused and should be removed.
-
-### Minikube
-
-- If I want to upgrade my Minikube to use Kubernetes 1.X, how do I do this? Does it entail a full teardown
-and restart of my Minikube cluster, including all its state?
-
 ## Development
 
 ### Requirements
@@ -527,6 +468,53 @@ the next time you run `make run`.
 $ git branch -C develop master
 $ git push origin master
 ```
+
+## Issues
+
+### CRDs
+
+- Would like to set OwnerReferences to resources in other namespaces or cluster-scoped resources so that
+child resources can be automatically garbage-collected.
+- Would like to be able to easily enforce validations (e.g. some resource is a singleton and there can
+only be one of them per namespace).
+- More generally, would more flexible, in-code validations for custom resources without the heavyweight
+need to implement webhooks.
+- Would like to enforce immutability of some/all fields in a custom resource spec.
+- Would like to have foreground propogation policy be default so director-teams can automatically be GC'd
+
+Larger architectural concerns and concerns related to the developer experience for creating CRDs are outside
+the scope of this README.
+
+### Kubebuilder
+
+- Creating cluster-scoped (as opposed to namespace-scoped) CRDs doesn't seem to work well, e.g.
+`kubebuilder create api --namespaced=false` doesn't seem to do the expected thing, and if it did, the 
+generated tests just fail out of the box.
+- The generated [samples](config/samples) are unusable and need to be modified. There doesn't seem to be
+much value from the files generated here by Kubebuilder.
+- The Makefile could be greatly streamlined. See
+[here](https://miro.com/app/board/o9J_kxIYNts=/?moveToWidget=3074457346709258907).
+- The directories and files in the `config` directory seem inconstent and don't work in a variety of ways.
+- Status subresources should be enabled out of the box for new CRDs, or at least enabled easily without
+repeatedly creating Kustomize overlays for each CRD.
+
+### BOSH
+
+- UAA clients require `bosh.admin` scope to delete releases and stemcells, even though they just need
+`bosh.stemcells.upload` and `bosh.releases.upload` to upload them. Better fine-grained permissions in BOSH
+would be very nice.
+- In the same vein, scoping BOSH resources to teams would be nice. This project provides a facade where it
+appears each Kubernetes namespace has a separate BOSH team and custom resources representing BOSH resources
+are created in individual namespaces where they appear scoped to an individual BOSH team, but they are in
+reality global resources in BOSH and prone to collision.
+- The `config cmdconf.Config` argument to `director.Factory#New` in the
+[`BOSH CLI codebase`](https://github.com/cloudfoundry/bosh-cli/blob/7850ac985726c614f8ecba726ae8c0d17b08ad7f/director/factory.go#L29)
+is unused and should be removed.
+
+### Minikube
+
+- If I want to upgrade my Minikube to use Kubernetes 1.X, how do I do this? Does it entail a full teardown
+and restart of my Minikube cluster, including all its state?
 
 ## License
 
