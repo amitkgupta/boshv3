@@ -466,7 +466,7 @@ the next time you run `make run`.
 
 ```
 $ git branch -C develop master
-$ git push origin master
+$ git push origin master:master
 ```
 
 ## Issues
