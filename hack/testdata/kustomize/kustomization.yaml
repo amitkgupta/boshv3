@@ -1,0 +1,12 @@
+resources:
+- bosh_system_namespace.yaml
+- ../../../config/crd
+- ../../../config/rbac
+- ../../../config/manager
+
+patches:
+- leader_election_rolebinding_subject_in_bosh_system_namespace.yaml
+- manager_clusterrolebinding_subject_in_bosh_system_namespace.yaml
+- manager_deployment_image.yaml
+
+namespace: bosh-system

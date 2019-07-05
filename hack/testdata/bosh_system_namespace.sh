@@ -1,0 +1,1 @@
+BOSH_SYSTEM_NAMESPACE=bosh-system

@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bosh-system
+  labels:
+    control-plane: boshv3-controller-manager

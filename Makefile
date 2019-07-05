@@ -1,5 +1,3 @@
-# Namespace where all system-level resource for BOSH v3 will be installed
-BOSH_SYSTEM_NAMESPACE ?= bosh-system
 # Image URL to use all building/pushing image targets
 REPO ?= amitkgupta/boshv3-controller
 
@@ -14,27 +12,6 @@ _exe: _code _fmt _vet
 # Generate manifests e.g. CRD, RBAC etc.
 _yaml: _generator
 	$(CONTROLLER_GEN) crd:trivialVersions=true rbac:roleName=manager-role paths="./..." output:crd:artifacts:config=config/crd/bases
-
-# Install CRDs into a cluster
-_crd:
-	kustomize build config/crd | kubectl apply -f -
-
-# Run against the configured Kubernetes cluster in ~/.kube/config
-run: _exe _crd
-	BOSH_SYSTEM_NAMESPACE="${BOSH_SYSTEM_NAMESPACE}" ./boshv3
-
-# Build the docker image
-image: _exe _tag
-	docker build . -t "${REPO}:${TAG}"
-
-# Push the docker image to a repo
-repo: _tag
-	docker push "${REPO}:${TAG}"
-
-# Install controller and RBAC in the configured Kubernetes cluster in ~/.kube/config
-install: _crd
-	kustomize build config/rbac | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
-	kustomize build config/manager | sed -e"s@<IMG>@${REPO}:${TAG}@" | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
 
 # Generate code
 _code: _generator
@@ -57,5 +34,30 @@ else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
 
+# Run against the configured Kubernetes cluster in ~/.kube/config
+run: _exe _crd
+	source ./hack/testdata/bosh_system_namespace.sh
+	./boshv3
+
+# Install CRDs into a cluster
+_crd:
+	kubectl apply -k config/crd
+
+# Build the docker image
+image: _tag
+	docker build . -t "${REPO}:${TAG}"
+
+# Push the docker image to a repo
+repo: _tag
+	docker push "${REPO}:${TAG}"
+	sed -e 's@image: .*@image: '"${REPO}:${TAG}"'@' -i '' ./hack/testdata/kustomize/manager_deployment_image.yaml
+	git commit -am 'h/t/k/manager_deployment_image.yaml: set image to ${REPO}:${TAG}'
+
+# Install controller and RBAC in the configured Kubernetes cluster in ~/.kube/config
+install: _tag
+	kubectl apply -k hack/testdata/kustomize
+	kustomize build config/manager | sed -e"s@<IMG>@${REPO}:${TAG}@" | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
+
 _tag:
+	test -z "$(git status --porcelain)"
 TAG=$(shell git rev-parse --short HEAD)
