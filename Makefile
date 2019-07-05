@@ -1,6 +1,5 @@
 SHELL = /bin/sh
 
-BOSH_SYSTEM_NAMESPACE ?= bosh-system
 # Image URL to use all building/pushing image targets
 REPO ?= amitkgupta/boshv3-controller
 
@@ -44,7 +43,7 @@ endif
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: _exe
 	kubectl apply -k config/crd
-	BOSH_SYSTEM_NAMESPACE=${BOSH_SYSTEM_NAMESPACE} ./boshv3
+	BOSH_SYSTEM_NAMESPACE=bosh-system ./boshv3
 
 # Build the Docker image
 image: _tag
@@ -67,4 +66,4 @@ install:
 
 # Uninstall controller and RBAC from the configured Kubernetes cluster in ~/.kube/config
 uninstall:
-	kubectl delete deploy --all -n ${BOSH_SYSTEM_NAMESPACE}
+	kubectl delete deploy --all -n bosh-system

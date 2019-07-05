@@ -454,7 +454,7 @@ and restart of my Minikube cluster, including all its state?
 
 ### Requirements
 
-You will need to have some prerequisites installed such as `go`, `make`, `kubectl`, `docker`, and
+You will need to have some prerequisites installed such as `go`, `make`, `kubectl`, `docker`, `git` and
 `kubebuilder` installed. You should have the `bosh` CLI installed so you can target BOSH Directors directly
 and manually test that the right resources/tasks are being created/run in BOSH. This project manages UAA
 clients associated with BOSH Directors, so it can be useful to have the `uaac` CLI installed as well.
@@ -464,6 +464,14 @@ clients associated with BOSH Directors, so it can be useful to have the `uaac` C
 Most of the important tasks for your development lifecycle are in the [`Makefile`](Makefile). An overview
 of the tasks in the Makefile and their relationships to one another is available
 [here](https://miro.com/app/board/o9J_kxIYNts=/?moveToWidget=3074457346709258907).
+
+### Setup your working directory
+
+```
+$ go get github.com/amitkgupta/boshv3/...
+$ cd $GOPATH/src/github.com/amitkgupta/boshv3
+$ git checkout develop
+```
 
 ### Creating a new API
 
@@ -495,8 +503,9 @@ the controllers as a local process interacting with the Kubernetes API.
 are happening. Consider trying out the [samples](config/samples).
 - `kubectl get bosh --all-namespaces` gives a view from the Kubernetes API perspective, which is meant to
 respresent the "BOSH v3 API" this project is intended to explore as a concept
+- `git commit` any changes and consider `git push`ing them to the `develop` branch.
 
-### Publish, Deploy, and Test
+### Deploy and Test
 
 - `make image repo` to publish a Docker image containing the controllers.
 - `make install` to apply the same CRD YAML configurations as in `make run`, as well as YAML
