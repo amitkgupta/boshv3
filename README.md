@@ -507,17 +507,29 @@ respresent the "BOSH v3 API" this project is intended to explore as a concept
 
 ### Deploy and Test
 
-- `make image repo` to publish a Docker image containing the controllers.
+- `make image` to build a local Docker image containing the controllers.
+- `make repo` to push the image to a Docker repository; by default this pushes to the `amitkgupta/boshv3`
+repository, override that with `make REPO=<your/repo> repo` if desired.
 - `make install` to apply the same CRD YAML configurations as in `make run`, as well as YAML
 configurations for deploying the controllers to the Kubernetes cluster with the published Docker image and 
 authorizing them via RBAC policies to function properly.
 - Test things out same as above.
+- `git push` to the `develop` branch if testing goes well; note that `make repo` makes a commit that
+determines the exact image repo and tag that gets deployed when running `make install`, so it's important
+to `git push` after testing goes well.
 - `make uninstall` to delete the controllers from the Kubernetes cluster; it's important to do this before
 the next time you run `make run`.
 
 ### Document
 
 - Update the relevant sections in this README and add a workable example in `config/samples`.
+
+### Promote
+
+```
+$ git branch -C develop master
+$ git push origin master
+```
 
 ## License
 
