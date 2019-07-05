@@ -1,5 +1,6 @@
 SHELL = /bin/sh
 
+BOSH_SYSTEM_NAMESPACE ?= bosh-system
 # Image URL to use all building/pushing image targets
 REPO ?= amitkgupta/boshv3-controller
 
@@ -7,6 +8,7 @@ REPO ?= amitkgupta/boshv3-controller
 
 all: _yaml _exe
 
+# Remove the built executable
 clean:
 	rm -f ./boshv3
 
@@ -42,25 +44,27 @@ endif
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: _exe
 	kubectl apply -k config/crd
-	BOSH_SYSTEM_NAMESPACE=bosh-system ./boshv3
+	BOSH_SYSTEM_NAMESPACE=${BOSH_SYSTEM_NAMESPACE} ./boshv3
 
-# Build the docker image
+# Build the Docker image
 image: _tag
 	docker build . -t "${REPO}:${TAG}"
 
-# Push the docker image to a repo
+# Push the Docker image to a repo
 repo: _tag
 	docker push "${REPO}:${TAG}"
-	sed -e 's@image: .*@image: '"${REPO}:${TAG}"'@' -i '' ./hack/testdata/kustomize/manager_deployment_image.yaml
+	sed -e 's@image: .*@image: '"${REPO}:${TAG}"'@' -i '' ./hack/test/kustomize/manager_deployment_image.yaml
 	git commit -am 'h/t/k/manager_deployment_image.yaml: set image to ${REPO}:${TAG}'
 
+# Set the TAG environment variable used for tagging Docker image
 _tag:
 	test -z "$(git status --porcelain)"
 TAG=$(shell git rev-parse --short HEAD)
 
 # Install controller and RBAC in the configured Kubernetes cluster in ~/.kube/config
 install:
-	kubectl apply -k hack/testdata/kustomize
+	kubectl apply -k hack/test/kustomize
 
+# Uninstall controller and RBAC from the configured Kubernetes cluster in ~/.kube/config
 uninstall:
-	kubectl delete -k hack/testdata/kustomize
+	kubectl delete deploy --all -n ${BOSH_SYSTEM_NAMESPACE}

@@ -1,5 +1,7 @@
 resources:
 - bosh_system_namespace.yaml
+
+bases:
 - ../../../config/crd
 - ../../../config/rbac
 - ../../../config/manager
