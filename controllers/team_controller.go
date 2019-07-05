@@ -168,15 +168,22 @@ func reconcileWithUAA(
 		}
 	}
 
-	secretData := "TODOMAKEBETTERSECRET"
 	secret := v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ue.SecretName(),
 			Namespace: ue.SecretNamespace(),
 		},
-		Type:       v1.SecretTypeOpaque,
-		StringData: map[string]string{"secret": secretData},
+		Type: v1.SecretTypeOpaque,
 	}
+
+	secretData, err := generateSecret()
+	if err != nil {
+		log.Error(err, "failed to generate secret")
+		return err
+	} else {
+		secret.StringData = map[string]string{"secret": secretData}
+	}
+
 	if err := ignoreAlreadyExists(c.Create(ctx, &secret)); err != nil {
 		log.Error(err, "failed to create secret", "secret", ue.SecretName(), "namespace", ue.SecretNamespace())
 		return err

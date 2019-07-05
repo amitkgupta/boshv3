@@ -17,6 +17,8 @@ limitations under the License.
 package controllers
 
 import (
+	"crypto/rand"
+
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -32,4 +34,19 @@ func ignoreAlreadyExists(err error) error {
 		return nil
 	}
 	return err
+}
+
+func generateSecret() (string, error) {
+	bytes := make([]byte, 20)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+
+	const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+	for i, b := range bytes {
+		bytes[i] = alphabet[b%byte(len(alphabet))]
+	}
+
+	return string(bytes), nil
 }
