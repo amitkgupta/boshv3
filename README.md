@@ -26,16 +26,11 @@ BOSH could be like.
 
 ## Install
 
-You will need to have some prerequisites installed such as `go`, `make`, `kustomize`, and `kubectl`. To
-install this to a Kubernetes cluster, make sure `$GOPATH` is properly set, make sure `kubectl` is properly
-targetting the cluster, and run:
+You will need to have `kubectl` installed. To install this to a Kubernetes cluster, make sure `kubectl` is
+properly targetting the cluster, and run:
 
 ```
-$ go get githbu.com/amitkgupta/boshv3/...
-
-$ cd $GOPATH/src/github.com/amitkgupta/boshv3
-
-$ make install # 🤞🏾
+$ kubectl apply -k https://github.com/amitkgupta/boshv3/hack/test/kustomize
 ```
 
 For this installation to actually be useable, you will need access to one or more BOSH Directors with
@@ -58,6 +53,10 @@ $ git show -s --oneline --no-decorate
 
 $ minikube version
 minikube version: v1.2.0
+
+$ kubectl version --short
+Client Version: v1.15.0
+Server Version: v1.15.0
 ```
 
 ## Concepts
@@ -448,18 +447,17 @@ is unused and should be removed.
 
 ### Minikube
 
-- If I want to upgrade my Minikube to use Kubernetes 1.15, how do I do this? Does it entail a full teardown
+- If I want to upgrade my Minikube to use Kubernetes 1.X, how do I do this? Does it entail a full teardown
 and restart of my Minikube cluster, including all its state?
 
 ## Development
 
 ### Requirements
 
-You will need to have some prerequisites installed such as `go`, `make`, `kustomize`, `kubectl`, `docker`,
-and `kubebuilder` installed. You should have the `bosh` CLI installed so you can target BOSH Directors
-directly and manually test that the right resources/tasks are being created/run in BOSH. This project
-manages UAA clients associated with BOSH Directors, so it can be useful to have the `uaac` CLI installed as
-well.
+You will need to have some prerequisites installed such as `go`, `make`, `kubectl`, `docker`, and
+`kubebuilder` installed. You should have the `bosh` CLI installed so you can target BOSH Directors directly
+and manually test that the right resources/tasks are being created/run in BOSH. This project manages UAA
+clients associated with BOSH Directors, so it can be useful to have the `uaac` CLI installed as well.
 
 ### Makefile
 
@@ -505,6 +503,8 @@ respresent the "BOSH v3 API" this project is intended to explore as a concept
 configurations for deploying the controllers to the Kubernetes cluster with the published Docker image and 
 authorizing them via RBAC policies to function properly.
 - Test things out same as above.
+- `make uninstall` to delete the controllers from the Kubernetes cluster; it's important to do this before
+the next time you run `make run`.
 
 ### Document
 
