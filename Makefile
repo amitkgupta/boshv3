@@ -1,17 +1,22 @@
+SHELL = /bin/sh
+
 # Image URL to use all building/pushing image targets
 REPO ?= amitkgupta/boshv3-controller
 
-.PHONY: _all $(MAKECMDGOALS)
+.PHONY: all $(MAKECMDGOALS)
 
-_all: _yaml _exe
+all: _yaml _exe
 
-# Build local executable
-_exe: _code _fmt _vet
-	go build
+clean:
+	rm -f ./boshv3
 
 # Generate manifests e.g. CRD, RBAC etc.
 _yaml: _generator
 	$(CONTROLLER_GEN) crd:trivialVersions=true rbac:roleName=manager-role paths="./..." output:crd:artifacts:config=config/crd/bases
+
+# Build local executable
+_exe: _code _fmt _vet
+	go build
 
 # Generate code
 _code: _generator
@@ -35,13 +40,9 @@ CONTROLLER_GEN=$(shell which controller-gen)
 endif
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: _exe _crd
-	source ./hack/testdata/bosh_system_namespace.sh
-	./boshv3
-
-# Install CRDs into a cluster
-_crd:
+run: _exe
 	kubectl apply -k config/crd
+	BOSH_SYSTEM_NAMESPACE=bosh-system ./boshv3
 
 # Build the docker image
 image: _tag
@@ -53,11 +54,13 @@ repo: _tag
 	sed -e 's@image: .*@image: '"${REPO}:${TAG}"'@' -i '' ./hack/testdata/kustomize/manager_deployment_image.yaml
 	git commit -am 'h/t/k/manager_deployment_image.yaml: set image to ${REPO}:${TAG}'
 
-# Install controller and RBAC in the configured Kubernetes cluster in ~/.kube/config
-install: _tag
-	kubectl apply -k hack/testdata/kustomize
-	kustomize build config/manager | sed -e"s@<IMG>@${REPO}:${TAG}@" | sed -e"s/<BOSH_SYSTEM_NAMESPACE>/${BOSH_SYSTEM_NAMESPACE}/" | kubectl apply -f -
-
 _tag:
 	test -z "$(git status --porcelain)"
 TAG=$(shell git rev-parse --short HEAD)
+
+# Install controller and RBAC in the configured Kubernetes cluster in ~/.kube/config
+install:
+	kubectl apply -k hack/testdata/kustomize
+
+uninstall:
+	kubectl delete -k hack/testdata/kustomize
