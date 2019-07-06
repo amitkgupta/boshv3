@@ -94,7 +94,6 @@ func (c *uaaClientImpl) CreateClient(name, secret string, authorities []string) 
 			ClientID:             name,
 			ClientSecret:         secret,
 			AuthorizedGrantTypes: []string{"client_credentials"},
-			RedirectURI:          []string{"http://test1.com"},
 			Scope:                []string{"uaa.none"},
 			Authorities:          authorities,
 		},
