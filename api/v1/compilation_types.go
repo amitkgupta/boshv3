@@ -51,7 +51,7 @@ type CompilationSpec struct {
 type CompilationStatus struct {
 	Warning          string `json:"warning"`
 	OriginalDirector string `json:"original_director"`
-	Available        bool   `json:"avialable"`
+	Available        bool   `json:"available"`
 }
 
 // +kubebuilder:object:root=true

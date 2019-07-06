@@ -445,7 +445,7 @@ spec:
           type: object
         status:
           properties:
-            avialable:
+            available:
               type: boolean
             original_director:
               type: string
@@ -454,7 +454,7 @@ spec:
           required:
           - warning
           - original_director
-          - avialable
+          - available
           type: object
       type: object
   versions:
