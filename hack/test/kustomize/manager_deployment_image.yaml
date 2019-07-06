@@ -7,4 +7,4 @@ spec:
     spec:
       containers:
       - name: manager
-        image: amitkgupta/boshv3-controller:e82beea
+        image: amitkgupta/boshv3-controller:5427461
