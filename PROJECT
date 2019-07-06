@@ -23,3 +23,6 @@ resources:
 - group: bosh
   version: v1
   kind: Network
+- group: bosh
+  version: v1
+  kind: Compilation

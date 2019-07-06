@@ -67,7 +67,11 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) 
 		team.Status.OriginalDirector,
 		r.BOSHSystemNamespace,
 	); err != nil {
-		log.Error(err, "unable to construct UAA client for namespace")
+		log.Error(
+			err,
+			"unable to construct UAA client for director",
+			"director", team.Status.OriginalDirector,
+		)
 		return
 	}
 

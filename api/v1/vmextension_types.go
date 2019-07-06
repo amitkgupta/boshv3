@@ -112,7 +112,10 @@ func (v *VMExtension) CreateUnlessExists(
 ) error {
 	if err := bc.CreateVMExtension(
 		v.InternalName(),
-		v.Status.OriginalCloudProperties,
+		remoteclients.VMExtension{
+			Name:            v.InternalName(),
+			CloudProperties: v.Status.OriginalCloudProperties,
+		},
 	); err != nil {
 		return err
 	}

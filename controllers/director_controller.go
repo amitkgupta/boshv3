@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 
 	"github.com/go-logr/logr"
 
@@ -30,7 +31,8 @@ import (
 // DirectorReconciler reconciles a Director object
 type DirectorReconciler struct {
 	client.Client
-	Log logr.Logger
+	Log                 logr.Logger
+	BOSHSystemNamespace string
 }
 
 // +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=directors,verbs=get;list;watch;create;update;patch;delete
@@ -39,6 +41,18 @@ type DirectorReconciler struct {
 func (r *DirectorReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("director", req.NamespacedName)
+
+	if req.NamespacedName.Namespace != r.BOSHSystemNamespace {
+		msg := "cannot create director outside BOSH system namespace"
+		err = errors.New(msg)
+		log.Error(
+			err,
+			msg,
+			"namespace", req.NamespacedName.Namespace,
+			"bosh_system_namespace", r.BOSHSystemNamespace,
+		)
+		return
+	}
 
 	director := new(boshv1.Director)
 	if err = r.Get(ctx, req.NamespacedName, director); err != nil {

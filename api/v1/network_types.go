@@ -60,8 +60,8 @@ type Subnet struct {
 	Range           string                `json:"range"`
 	Gateway         string                `json:"gateway"`
 	DNS             []string              `json:"dns"`
-	Reserved        []string              `json:"reserved"`
-	Static          []string              `json:"static"`
+	Reserved        []string              `json:"reserved,omitempty"`
+	Static          []string              `json:"static,omitempty"`
 	AZs             []string              `json:"azs"`
 	CloudProperties *runtime.RawExtension `json:"cloud_properties,omitempty"`
 }

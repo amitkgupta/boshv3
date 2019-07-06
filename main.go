@@ -121,11 +121,21 @@ func main() {
 		os.Exit(1)
 	}
 	err = (&controllers.DirectorReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Director"),
+		Client:              mgr.GetClient(),
+		Log:                 ctrl.Log.WithName("controllers").WithName("Director"),
+		BOSHSystemNamespace: boshSystemNamespace,
 	}).SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Director")
+		os.Exit(1)
+	}
+	err = (&controllers.CompilationReconciler{
+		Client:              mgr.GetClient(),
+		Log:                 ctrl.Log.WithName("controllers").WithName("Compilation"),
+		BOSHSystemNamespace: boshSystemNamespace,
+	}).SetupWithManager(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Compilation")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

@@ -404,8 +404,6 @@ spec:
           properties:
             cloud_properties:
               type: object
-          required:
-          - cloud_properties
           type: object
         status:
           properties:
@@ -413,11 +411,13 @@ spec:
               type: boolean
             cloud_properties:
               type: object
+            immutable_fields_frozen:
+              type: boolean
             warning:
               type: string
           required:
+          - immutable_fields_frozen
           - warning
-          - cloud_properties
           - available
           type: object
       type: object

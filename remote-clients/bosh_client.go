@@ -36,14 +36,17 @@ type BOSHClient interface {
 	UploadStemcell(string, string) error
 	DeleteStemcell(string, string) error
 
-	CreateVMExtension(string, json.Marshaler) error
+	CreateVMExtension(string, VMExtension) error
 	DeleteVMExtension(string) error
 
-	CreateAZ(string, json.Marshaler) error
+	CreateAZ(string, AZ) error
 	DeleteAZ(string) error
 
 	CreateNetwork(string, Network) error
 	DeleteNetwork(string) error
+
+	CreateCompilation(string, Network, AZ, Compilation) error
+	DeleteCompilation(string) error
 }
 
 type boshClientImpl struct {
@@ -133,14 +136,14 @@ func (c *boshClientImpl) DeleteStemcell(stemcellName, version string) error {
 	}
 }
 
-type az struct {
-	Name            string         `json:"name"`
-	CloudProperties json.Marshaler `json:"cloud_properties"`
+type AZ struct {
+	Name            string                `json:"name"`
+	CloudProperties *runtime.RawExtension `json:"cloud_properties,omitempty"`
 }
 
-type vmExtension struct {
-	Name            string         `json:"name"`
-	CloudProperties json.Marshaler `json:"cloud_properties"`
+type VMExtension struct {
+	Name            string                `json:"name"`
+	CloudProperties *runtime.RawExtension `json:"cloud_properties"`
 }
 
 type Network struct {
@@ -153,26 +156,40 @@ type Subnet struct {
 	Range           string                `json:"range"`
 	Gateway         string                `json:"gateway"`
 	DNS             []string              `json:"dns"`
-	Reserved        []string              `json:"reserved"`
-	Static          []string              `json:"static"`
+	Reserved        []string              `json:"reserved,omitempty"`
+	Static          []string              `json:"static,omitempty"`
 	AZs             []string              `json:"azs"`
 	CloudProperties *runtime.RawExtension `json:"cloud_properties,omitempty"`
 }
 
-type cloudConfig struct {
-	AZs          []az          `json:"azs,omitempty"`
-	VMExtensions []vmExtension `json:"vm_extensions,omitempty"`
-	Networks     []Network     `json:"networks,omitempty"`
+type Compilation struct {
+	Workers             int                   `json:"workers"`
+	AZ                  string                `json:"az"`
+	OrphanWorkers       bool                  `json:"orphan_workers"`
+	VMResources         VMResources           `json:"vm_resources"`
+	CloudProperties     *runtime.RawExtension `json:"cloud_properties"`
+	Network             string                `json:"network"`
+	ReuseCompilationVMs bool                  `json:"reuse_compilation_vms"`
 }
 
-func (c *boshClientImpl) CreateVMExtension(name string, cloudProperties json.Marshaler) error {
+type VMResources struct {
+	CPU               int `json:"cpu"`
+	RAM               int `json:"ram"`
+	EphemeralDiskSize int `json:"ephemeral_disk_size"`
+}
+
+type cloudConfig struct {
+	AZs          []AZ          `json:"azs,omitempty"`
+	VMExtensions []VMExtension `json:"vm_extensions,omitempty"`
+	Networks     []Network     `json:"networks,omitempty"`
+	Compilation  *Compilation  `json:"compilation,omitempty"`
+}
+
+func (c *boshClientImpl) CreateVMExtension(name string, vmExtension VMExtension) error {
 	return c.updateCloudConfig(
 		name,
 		cloudConfig{
-			VMExtensions: []vmExtension{vmExtension{
-				Name:            name,
-				CloudProperties: cloudProperties,
-			}},
+			VMExtensions: []VMExtension{vmExtension},
 		},
 	)
 }
@@ -181,16 +198,8 @@ func (c *boshClientImpl) DeleteVMExtension(name string) error {
 	return c.deleteCloudConfig(name)
 }
 
-func (c *boshClientImpl) CreateAZ(name string, cloudProperties json.Marshaler) error {
-	return c.updateCloudConfig(
-		name,
-		cloudConfig{
-			AZs: []az{az{
-				Name:            name,
-				CloudProperties: cloudProperties,
-			}},
-		},
-	)
+func (c *boshClientImpl) CreateAZ(name string, az AZ) error {
+	return c.updateCloudConfig(name, cloudConfig{AZs: []AZ{az}})
 }
 
 func (c *boshClientImpl) DeleteAZ(name string) error {
@@ -198,15 +207,30 @@ func (c *boshClientImpl) DeleteAZ(name string) error {
 }
 
 func (c *boshClientImpl) CreateNetwork(name string, network Network) error {
+	return c.updateCloudConfig(name, cloudConfig{Networks: []Network{network}})
+}
+
+func (c *boshClientImpl) DeleteNetwork(name string) error {
+	return c.deleteCloudConfig(name)
+}
+
+func (c *boshClientImpl) CreateCompilation(
+	name string,
+	network Network,
+	az AZ,
+	compilation Compilation,
+) error {
 	return c.updateCloudConfig(
 		name,
 		cloudConfig{
-			Networks: []Network{network},
+			Networks:    []Network{network},
+			AZs:         []AZ{az},
+			Compilation: &compilation,
 		},
 	)
 }
 
-func (c *boshClientImpl) DeleteNetwork(name string) error {
+func (c *boshClientImpl) DeleteCompilation(name string) error {
 	return c.deleteCloudConfig(name)
 }
 

@@ -128,6 +128,77 @@ func boshClientForNamespace(
 	)
 }
 
+func boshClientForDirector(
+	ctx context.Context,
+	log logr.Logger,
+	c client.Client,
+	boshSystemNamespace string,
+	directorName string,
+) (remoteclients.BOSHClient, error) {
+	log = log.WithValues("director", directorName, "bosh_system_namespace", boshSystemNamespace)
+
+	var director boshv1.Director
+	if err := c.Get(
+		ctx,
+		types.NamespacedName{
+			Namespace: boshSystemNamespace,
+			Name:      directorName,
+		},
+		&director,
+	); err != nil {
+		log.Error(err, "failed to get director")
+		return nil, err
+	}
+
+	t := director.Team()
+	teamName := (&t).GetName()
+	teamNamespace := (&t).GetNamespace()
+	var team boshv1.Team
+	if err := c.Get(
+		ctx,
+		types.NamespacedName{
+			Namespace: teamNamespace,
+			Name:      teamName,
+		},
+		&team,
+	); err != nil {
+		log.Error(
+			err,
+			"failed to get team",
+			"team", teamName,
+			"team_namespace", teamNamespace,
+		)
+		return nil, err
+	}
+
+	var secret v1.Secret
+	if err := c.Get(
+		ctx,
+		types.NamespacedName{
+			Namespace: team.SecretNamespace(),
+			Name:      team.SecretName(),
+		},
+		&secret,
+	); err != nil {
+		log.Error(
+			err,
+			"failed to get secret",
+			"secret", team.SecretName(),
+			"secret_namespace", team.SecretNamespace(),
+		)
+		return nil, err
+	}
+
+	return remoteclients.NewBOSHClient(
+		director.Spec.URL,
+		director.Spec.CACert,
+		director.Spec.UAAURL,
+		team.ClientName(),
+		string(secret.Data["secret"]),
+		director.Spec.UAACACert,
+	)
+}
+
 func reconcileWithBOSH(
 	ctx context.Context,
 	log logr.Logger,

@@ -1,0 +1,61 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: compilations.bosh.akgupta.ca
+spec:
+  additionalPrinterColumns:
+    - name: Replicas
+      type: integer
+      description: Number of compilation worker replicas
+      JSONPath: .spec.replicas
+      priority: 0
+    - name: CPU
+      type: integer
+      description: CPU in MB for compilation workers
+      JSONPath: .spec.cpu
+      priority: 0
+    - name: RAM
+      type: integer
+      description: RAM in MB for compilation workers
+      JSONPath: .spec.ram
+      priority: 0
+    - name: Ephemeral Disk Size
+      type: integer
+      description: Ephemeral disk size in MB for compilation workers
+      JSONPath: .spec.ephemeral_disk_size
+      priority: 0
+    - name: Director
+      type: string
+      description: The BOSH Director which this Compilation resource is associated with
+      JSONPath: .status.original_director
+      priority: 0
+    - name: Available
+      type: boolean
+      description: Indicates this BOSH Compilation is available for use
+      JSONPath: .status.available
+      priority: 0
+    - name: Warning
+      type: string
+      description: Warning to display if custom resource has been mutated
+      JSONPath: .status.warning
+      priority: 0
+    - name: Network Type
+      type: string
+      description: The type of the BOSH Network for compilation workers
+      JSONPath: .spec.network_type
+      priority: 1
+    - name: Subnet Range
+      type: string
+      description: The CIDR range of the BOSH Network subnet for compilation workers
+      JSONPath: .spec.subnet_range
+      priority: 1
+    - name: Subnet Gateway
+      type: string
+      description: The gateway IP of the BOSH Network subnet for compilation workers
+      JSONPath: .spec.subnet_gateway
+      priority: 1
+    - name: User-provided Director
+      type: string
+      description: Same as 'Director' unless resource has been mutated
+      JSONPath: .spec.director
+      priority: 1

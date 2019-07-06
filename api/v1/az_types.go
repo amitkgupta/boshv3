@@ -32,13 +32,14 @@ import (
 
 // AZSpec defines the desired state of AZ
 type AZSpec struct {
-	CloudProperties *runtime.RawExtension `json:"cloud_properties"`
+	CloudProperties *runtime.RawExtension `json:"cloud_properties,omitempty"`
 }
 
 // AZStatus defines the observed state of AZ
 type AZStatus struct {
+	ImmutableFieldsFrozen   bool                  `json:"immutable_fields_frozen"`
 	Warning                 string                `json:"warning"`
-	OriginalCloudProperties *runtime.RawExtension `json:"cloud_properties"`
+	OriginalCloudProperties *runtime.RawExtension `json:"cloud_properties,omitempty"`
 	Available               bool                  `json:"available"`
 }
 
@@ -75,25 +76,24 @@ func (a *AZ) EnsureNoFinalizer() bool {
 	return changed
 }
 
-func (a *AZ) PrepareToSave() (needsStatusUpdate bool) {
-	originalCloudProperties := a.Status.OriginalCloudProperties
-
-	if originalCloudProperties == nil {
+func (a *AZ) PrepareToSave() bool {
+	if !a.Status.ImmutableFieldsFrozen {
+		a.Status.ImmutableFieldsFrozen = true
 		a.Status.OriginalCloudProperties = a.Spec.CloudProperties
-		needsStatusUpdate = true
-	} else {
-		mutated := a.Spec.CloudProperties.String() != originalCloudProperties.String()
-
-		if mutated && a.Status.Warning == "" {
-			a.Status.Warning = resourceMutationWarning
-			needsStatusUpdate = true
-		} else if !mutated && a.Status.Warning != "" {
-			a.Status.Warning = ""
-			needsStatusUpdate = true
-		}
+		return true
 	}
 
-	return
+	mutated := a.Spec.CloudProperties.String() != a.Status.OriginalCloudProperties.String()
+
+	if mutated && a.Status.Warning == "" {
+		a.Status.Warning = resourceMutationWarning
+		return true
+	} else if !mutated && a.Status.Warning != "" {
+		a.Status.Warning = ""
+		return true
+	}
+
+	return false
 }
 
 func (a AZ) InternalName() string {
@@ -111,7 +111,10 @@ func (a *AZ) CreateUnlessExists(
 ) error {
 	if err := bc.CreateAZ(
 		a.InternalName(),
-		a.Status.OriginalCloudProperties,
+		remoteclients.AZ{
+			Name:            a.InternalName(),
+			CloudProperties: a.Status.OriginalCloudProperties,
+		},
 	); err != nil {
 		return err
 	}

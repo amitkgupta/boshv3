@@ -29,6 +29,26 @@ rules:
 - apiGroups:
   - bosh.akgupta.ca
   resources:
+  - compilations
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
+  - compilations/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
   - directors
   verbs:
   - get

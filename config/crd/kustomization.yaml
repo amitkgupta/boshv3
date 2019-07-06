@@ -9,6 +9,7 @@ resources:
 - bases/bosh.akgupta.ca_vmextensions.yaml
 - bases/bosh.akgupta.ca_azs.yaml
 - bases/bosh.akgupta.ca_networks.yaml
+- bases/bosh.akgupta.ca_compilations.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
@@ -43,3 +44,8 @@ patches:
 - patches/nonempty_spec_properties_validations_in_networks.yaml
 - patches/additional_printer_columns_in_networks.yaml
 - patches/status_subresource_in_networks.yaml
+
+- patches/categories_in_compilations.yaml
+- patches/nonempty_spec_properties_validations_in_compilations.yaml
+- patches/additional_printer_columns_in_compilations.yaml
+- patches/status_subresource_in_compilations.yaml

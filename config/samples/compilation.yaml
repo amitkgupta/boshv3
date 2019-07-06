@@ -1,0 +1,15 @@
+apiVersion: "bosh.akgupta.ca/v1"
+kind: Compilation
+metadata:
+  name: vbox-admin
+  namespace: bosh-system
+spec:
+  replicas: 6
+  cpu: 4
+  ram: 512
+  ephemeral_disk_size: 2048
+  network_type: manual
+  subnet_range: 10.244.0.0/24
+  subnet_gateway: 10.244.0.1
+  subnet_dns: [8.8.8.8]
+  director: vbox-admin
