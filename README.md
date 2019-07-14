@@ -619,6 +619,11 @@ is unused and should be removed.
 - If I want to upgrade my Minikube to use Kubernetes 1.X, how do I do this? Does it entail a full teardown
 and restart of my Minikube cluster, including all its state?
 
+### Kustomize
+
+- Limitations on using patches to add things to an array, e.g. rules in an RBAC role. GitHub
+issue comment [here](https://github.com/kubernetes-sigs/kustomize/issues/642#issuecomment-480845393).
+
 ## License
 
 [Apache license 2.0](LICENSE) © Amit Kumar Gupta.

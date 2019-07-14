@@ -1,5 +1,5 @@
 - op: add
-  path: /rules/0
+  path: /rules/-
   value:
     apiGroups:
     - bosh.akgupta.ca
