@@ -1,8 +1,6 @@
-4. Deployment scale subr???
-
-5. variables
+1. variables
 	name
 	type
 	options
 
-3. errands?
+3. errands/tasks as jobs
