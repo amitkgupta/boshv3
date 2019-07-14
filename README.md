@@ -111,36 +111,35 @@ stemcell from the corresponding BOSH Director.
 
 The `Extension` kind of resource provided by the `extensions.bosh.akgupta.ca` CRD represents VM extensions
 that traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic
-"Cloud Config" and treats Extensions as their own, first-class resource. These will be referenceable by
-name within Instance Groups (not yet implemented). Creating one of these Extension resources requires
-simply providing `cloud_properties`. This extension will be created via the `Team` in the same namespace
-where the `Extension` resource has been created. The link between an `Extension` and a `Team` is implicit
-by virtue of being in the same namespace.  `Extension`s cannot be mutated. Deleting an `Extension` custom
-resource will delete it from from the corresponding BOSH Director.
+"Cloud Config" and treats Extensions as their own, first-class resource. These are referenceable by name
+within Deployments. Creating one of these Extension resources requires simply providing `cloud_properties`.
+This extension will be created via the `Team` in the same namespace where the `Extension` resource has been
+created. The link between an `Extension` and a `Team` is implicit by virtue of being in the same
+namespace.  `Extension`s cannot be mutated. Deleting an `Extension` custom resource will delete it from
+from the corresponding BOSH Director.
 
 ### AZ
 
 The `AZ` kind of resource provided by the `azs.bosh.akgupta.ca` CRD represents AZs (Availability Zones)
 that traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic "Cloud
-Config" and treats AZs as their own, first-class resource. These will be referenceable by name within
-Instance Groups (not yet implemented). Creating one of these AZ resources requires simply providing
-`cloud_properties`. This AZ will be created via the `Team` in the same namespace where the `AZ` resource
-has been created. The link between an `AZ` and a `Team` is implicit by virtue of being in the same
-namespace.  `AZ`s cannot be mutated. Deleting an `AZ` custom resource will delete it from from the
-corresponding BOSH Director.
+Config" and treats AZs as their own, first-class resource. These are referenceable by name within
+Deployments. Creating one of these AZ resources requires simply providing `cloud_properties`. This AZ will
+be created via the `Team` in the same namespace where the `AZ` resource has been created. The link between
+an `AZ` and a `Team` is implicit by virtue of being in the same namespace.  `AZ`s cannot be mutated.
+Deleting an `AZ` custom resource will delete it from from the corresponding BOSH Director.
 
 ### Network
 
 The `Network` kind of resource provided by the `networks.bosh.akgupta.ca` CRD represents networks that
 traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic "Cloud Config"
-and treats networks as their own, first-class resource. These will be referenceable by name within
-Instance Groups (not yet implemented). Creating one of these network resources involves specifying
-various properties (see [specification](#network-1) below), one of which is `subnets`. Each `subnet` in
-turn references a list of `azs` by name. These names should match the names of `AZ`s created within the
-same namespace. This network will be created via the `Team` in the same namespace where the `Network`
-resource has been created. The link between a `Network` and a `Team` is implicit by virtue of being in
-the same namespace. `Network`s cannot be mutated. Deleting an `Network` custom resource will delete it
-from from the corresponding BOSH Director.
+and treats networks as their own, first-class resource. These are referenceable by name within Deployments.
+Creating one of these network resources involves specifying various properties (see 
+[specification](#network-1) below), one of which is `subnets`. Each `subnet` in turn references a list of
+`azs` by name. These names should match the names of `AZ`s created within the same namespace. This network
+will be created via the `Team` in the same namespace where the `Network` resource has been created. The
+link between a `Network` and a `Team` is implicit by virtue of being in the same namespace. `Network`s
+cannot be mutated. Deleting an `Network` custom resource will delete it from from the corresponding BOSH
+Director.
 
 ### Compilation
 
@@ -150,13 +149,12 @@ monolithic "Cloud Config" and treats compilation as its own, first-class resourc
 other Cloud Config resources above, `Compilation`s must be created by the BOSH service administrator
 rather than the developer. Each `Compilation` must reference a `Director`, and there can be at most one
 `Compilation` per `Director`. A `Compilation` associated with a `Director` will implicitly be used when
-deploying any Instance Groups (not yet implemented) via a `Team` associated with that `Director`.
-Creating one of these compilation resources involves specifying various properties (see
-[specification](#compilation-1) below), including properties used to define an AZ and subnet. The user
-does not define separate `AZ` and `Network` resources to associate with a `Compilation`, rather the
-necessary information is inlined into the `Compilation` specification. `Compilation`s can be mutated,
-except for their `Director` reference. Deleting a `Compilation` will delete it from the corresponding
-BOSH Director.
+creating any Deployments via a `Team` associated with that `Director`. Creating one of these compilation
+resources involves specifying various properties (see [specification](#compilation-1) below), including
+properties used to define an AZ and subnet. The user does not define separate `AZ` and `Network` resources
+to associate with a `Compilation`, rather the necessary information is inlined into the `Compilation`
+specification. `Compilation`s can be mutated, except for their `Director` reference. Deleting a
+`Compilation` will delete it from the corresponding BOSH Director.
 
 ## Usage
 
