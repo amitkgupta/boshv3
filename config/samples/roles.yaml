@@ -1,0 +1,19 @@
+apiVersion: "bosh.akgupta.ca/v1"
+kind: Role
+metadata:
+  name: zookeeper
+  namespace: test
+spec:
+  source:
+    job: zookeeper
+    release: zookeeper-0.0.9
+---
+apiVersion: "bosh.akgupta.ca/v1"
+kind: Role
+metadata:
+  name: zookeeper-status
+  namespace: test
+spec:
+  source:
+    job: status
+    release: zookeeper-0.0.9

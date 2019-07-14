@@ -32,9 +32,9 @@ type BOSHClient interface {
 	UploadRelease(string, string) error
 	DeleteRelease(string, string) error
 
-	HasStemcell(string, string) (bool, error)
-	UploadStemcell(string, string) error
-	DeleteStemcell(string, string) error
+	HasBaseImage(string, string) (bool, error)
+	UploadBaseImage(string, string) error
+	DeleteBaseImage(string, string) error
 
 	CreateVMExtension(string, VMExtension) error
 	DeleteVMExtension(string) error
@@ -47,6 +47,9 @@ type BOSHClient interface {
 
 	CreateCompilation(string, Network, AZ, Compilation) error
 	DeleteCompilation(string) error
+
+	CreateDeployment(string, Deployment) error
+	DeleteDeployment(string) error
 }
 
 type boshClientImpl struct {
@@ -117,17 +120,17 @@ func (c *boshClientImpl) DeleteRelease(releaseName, version string) error {
 	}
 }
 
-func (c *boshClientImpl) HasStemcell(stemcellName, version string) (bool, error) {
-	return c.api.HasStemcell(stemcellName, version)
+func (c *boshClientImpl) HasBaseImage(baseImageName, version string) (bool, error) {
+	return c.api.HasStemcell(baseImageName, version)
 }
 
-func (c *boshClientImpl) UploadStemcell(url, sha1 string) error {
+func (c *boshClientImpl) UploadBaseImage(url, sha1 string) error {
 	return c.api.UploadStemcellURL(url, sha1, false)
 }
 
-func (c *boshClientImpl) DeleteStemcell(stemcellName, version string) error {
+func (c *boshClientImpl) DeleteBaseImage(baseImageName, version string) error {
 	if stemcell, err := c.api.FindStemcell(boshdir.NewStemcellSlug(
-		stemcellName,
+		baseImageName,
 		version,
 	)); err != nil {
 		return err
@@ -167,7 +170,7 @@ type Compilation struct {
 	AZ                  string                `json:"az"`
 	OrphanWorkers       bool                  `json:"orphan_workers"`
 	VMResources         VMResources           `json:"vm_resources"`
-	CloudProperties     *runtime.RawExtension `json:"cloud_properties"`
+	CloudProperties     *runtime.RawExtension `json:"cloud_properties,omitempty"`
 	Network             string                `json:"network"`
 	ReuseCompilationVMs bool                  `json:"reuse_compilation_vms"`
 }
@@ -183,6 +186,68 @@ type cloudConfig struct {
 	VMExtensions []VMExtension `json:"vm_extensions,omitempty"`
 	Networks     []Network     `json:"networks,omitempty"`
 	Compilation  *Compilation  `json:"compilation,omitempty"`
+}
+
+type Deployment struct {
+	Name           string           `json:"name"`
+	Update         DeploymentUpdate `json:"update"`
+	Releases       []Release        `json:"releases"`
+	Stemcells      []Stemcell       `json:"stemcells"`
+	InstanceGroups []InstanceGroup  `json:"instance_groups"`
+}
+
+type DeploymentUpdate struct {
+	Canaries        int         `json:"canaries"`
+	MaxInFlight     interface{} `json:"max_in_flight"`
+	CanaryWatchTime interface{} `json:"canary_watch_time"`
+	UpdateWatchTime interface{} `json:"update_watch_time"`
+	Serial          bool        `json:"serial"`
+	VMStrategy      string      `json:"vm_strategy"`
+}
+
+type Release struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
+type Stemcell struct {
+	Alias   string `json:"alias"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
+type InstanceGroup struct {
+	Name               string              `json:"name"`
+	AZs                []string            `json:"azs"`
+	Instances          int                 `json:"instances"`
+	Jobs               []Job               `json:"jobs"`
+	VMExtensions       []string            `json:"vm_extensions"`
+	VMResources        VMResources         `json:"vm_resources"`
+	Stemcell           string              `json:"stemcell"`
+	PersistentDiskSize int                 `json:"persistent_disk_size"`
+	Networks           []DeploymentNetwork `json:"networks"`
+}
+
+type Job struct {
+	Name       string                  `json:"name"`
+	Release    string                  `json:"release"`
+	Consumes   map[string]ConsumesLink `json:"consumes"`
+	Provides   map[string]ProvidesLink `json:"provides"`
+	Properties *runtime.RawExtension   `json:"properties,omitempty"`
+}
+
+type ConsumesLink struct {
+	From       string `json:"from"`
+	Deployment string `json:"deployment"`
+}
+
+type ProvidesLink struct {
+	As     string `json:"as"`
+	Shared bool   `json:"shared"`
+}
+
+type DeploymentNetwork struct {
+	Name string `json:"name"`
 }
 
 func (c *boshClientImpl) CreateVMExtension(name string, vmExtension VMExtension) error {
@@ -255,4 +320,25 @@ func (c *boshClientImpl) updateCloudConfig(
 func (c *boshClientImpl) deleteCloudConfig(name string) error {
 	_, err := c.api.DeleteConfig("cloud", name)
 	return err
+}
+
+func (c *boshClientImpl) CreateDeployment(name string, deployment Deployment) error {
+	bytes, err := json.Marshal(deployment)
+	if err != nil {
+		return err
+	}
+
+	if d, err := c.api.FindDeployment(name); err != nil {
+		return err
+	} else {
+		return d.Update(bytes, boshdir.UpdateOpts{})
+	}
+}
+
+func (c *boshClientImpl) DeleteDeployment(name string) error {
+	if d, err := c.api.FindDeployment(name); err != nil {
+		return err
+	} else {
+		return d.Delete(false)
+	}
 }

@@ -29,6 +29,26 @@ rules:
 - apiGroups:
   - bosh.akgupta.ca
   resources:
+  - baseimages
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
+  - baseimages/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
   - compilations
   verbs:
   - get
@@ -42,6 +62,26 @@ rules:
   - bosh.akgupta.ca
   resources:
   - compilations/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
+  - deployments/status
   verbs:
   - get
   - update
@@ -102,26 +142,6 @@ rules:
   - bosh.akgupta.ca
   resources:
   - releases/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
-  - bosh.akgupta.ca
-  resources:
-  - stemcells
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - bosh.akgupta.ca
-  resources:
-  - stemcells/status
   verbs:
   - get
   - update

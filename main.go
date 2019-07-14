@@ -75,13 +75,13 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Release")
 		os.Exit(1)
 	}
-	err = (&controllers.StemcellReconciler{
+	err = (&controllers.BaseImageReconciler{
 		Client:              mgr.GetClient(),
-		Log:                 ctrl.Log.WithName("controllers").WithName("Stemcell"),
+		Log:                 ctrl.Log.WithName("controllers").WithName("BaseImage"),
 		BOSHSystemNamespace: boshSystemNamespace,
 	}).SetupWithManager(mgr)
 	if err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Stemcell")
+		setupLog.Error(err, "unable to create controller", "controller", "BaseImage")
 		os.Exit(1)
 	}
 	err = (&controllers.TeamReconciler{
@@ -136,6 +136,15 @@ func main() {
 	}).SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Compilation")
+		os.Exit(1)
+	}
+	err = (&controllers.DeploymentReconciler{
+		Client:              mgr.GetClient(),
+		Log:                 ctrl.Log.WithName("controllers").WithName("Deployment"),
+		BOSHSystemNamespace: boshSystemNamespace,
+	}).SetupWithManager(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Deployment")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

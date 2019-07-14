@@ -1,37 +1,3 @@
-1. Roles
-	source:
-		job
-		release
-	properties
-
-2. Deployment
-	azs
-	replicas
-	containers:
-		- role:
-		  provides:
-			xx:
-				as(?): string
-			  	shared(?): bool
-		  consumes:
-			xx:
-				from(?): string
-				deployment(?): string
-		  resources
-			cpu
-			ram
-			ephemeral_disk_size
-			persistent_disk_size
-	extensions
-	base_image
-	network
-	update
-		canaries
-		max_in_flight
-		canary_watch_time
-
-3. errands?
-
 4. Deployment scale subr???
 
 5. variables
@@ -39,22 +5,4 @@
 	type
 	options
 
-6. addons
-	name
-	job
-	include
-		stemcell
-			os
-		instance_groups
-		jobs
-			name
-			release
-		networks
-	exclude
-		stemcell
-			os
-		instance_groups
-		jobs
-			name
-			release
-		networks
+3. errands?

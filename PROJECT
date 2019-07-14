@@ -7,7 +7,7 @@ resources:
   kind: Release
 - group: bosh
   version: v1
-  kind: Stemcell
+  kind: BaseImage
 - group: bosh
   version: v1
   kind: Director
@@ -29,3 +29,6 @@ resources:
 - group: bosh
   version: v1
   kind: Role
+- group: bosh
+  version: v1
+  kind: Deployment

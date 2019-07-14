@@ -1,0 +1,11 @@
+- op: add
+  path: /rules/0
+  value:
+    apiGroups:
+    - bosh.akgupta.ca
+    resources:
+    - roles
+    verbs:
+    - get
+    - list
+    - watch

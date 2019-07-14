@@ -1,0 +1,31 @@
+apiVersion: "bosh.akgupta.ca/v1"
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: test
+spec:
+  azs: [az1]
+  replicas: 5
+  containers:
+    - role: zookeeper
+      exported_configuration:
+        conn:
+          internal_link: conn
+          exported: true
+      resources:
+        ram: 512
+        cpu: 1
+        ephemeral_disk_size: 512
+        persistent_disk_size: 1024
+    - role: zookeeper-status
+      resources:
+        ram: 512
+        cpu: 1
+        ephemeral_disk_size: 512
+  base_image: warden-xenial-315.41
+  network: nw1
+  update_strategy:
+    min_ready_seconds: 5
+    max_ready_seconds: 60
+    max_unavailable_replicas: 2
+  force_reconciliation: true

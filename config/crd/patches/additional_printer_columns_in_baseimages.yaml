@@ -1,22 +1,22 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: stemcells.bosh.akgupta.ca
+  name: baseimages.bosh.akgupta.ca
 spec:
   additionalPrinterColumns:
-    - name: Stemcell Name
+    - name: Base Image Name
       type: string
-      description: The name of the BOSH stemcell
-      JSONPath: .status.originalSpec.stemcellName
+      description: The name of the BOSH base image
+      JSONPath: .status.originalSpec.baseImageName
       priority: 0
     - name: Version
       type: string
-      description: The version of the BOSH stemcell
+      description: The version of the BOSH base image
       JSONPath: .status.originalSpec.version
       priority: 0
     - name: Available
       type: boolean
-      description: Indicates this BOSH stemcell is available for use
+      description: Indicates this BOSH base image is available for use
       JSONPath: .status.available
       priority: 0
     - name: Warning
@@ -26,7 +26,7 @@ spec:
       priority: 0
     - name: URL
       type: string
-      description: The URL from which the Director fetches the BOSH stemcell
+      description: The URL from which the Director fetches the BOSH base image
       JSONPath: .status.originalSpec.url
       priority: 1
     - name: SHA1
@@ -34,10 +34,10 @@ spec:
       description: The SHA1 that should match the artifact fetched from the URL
       JSONPath: .status.originalSpec.sha1
       priority: 1
-    - name: User-provided Stemcell Name
+    - name: User-provided Base Image Name
       type: string
-      description: Same as 'Stemcell Name' unless resource has been mutated 
-      JSONPath: .spec.stemcellName
+      description: Same as 'Base Image Name' unless resource has been mutated
+      JSONPath: .spec.baseImageName
       priority: 1
     - name: User-provided Version
       type: string

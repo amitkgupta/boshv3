@@ -27,25 +27,33 @@ import (
 	"github.com/amitkgupta/boshv3/remote-clients"
 )
 
-// StemcellReconciler reconciles a Stemcell object
-type StemcellReconciler struct {
+// DeploymentReconciler reconciles a Deployment object
+type DeploymentReconciler struct {
 	client.Client
 	Log                 logr.Logger
 	BOSHSystemNamespace string
 }
 
-// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=stemcells,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=stemcells/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=deployments/status,verbs=get;update;patch
 
-func (r *StemcellReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
+func (r *DeploymentReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("stemcell", req.NamespacedName)
+	log := r.Log.WithValues("deployment", req.NamespacedName)
 
-	var stemcell boshv1.Stemcell
-	if err = r.Get(ctx, req.NamespacedName, &stemcell); err != nil {
-		log.Error(err, "unable to fetch stemcell")
+	var deployment boshv1.Deployment
+	if err = r.Get(ctx, req.NamespacedName, &deployment); err != nil {
+		log.Error(err, "unable to fetch deployment")
 		err = ignoreDoesNotExist(err)
 		return
+	}
+
+	if deployment.Spec.ForceReconciliation {
+		deployment.Spec.ForceReconciliation = false
+		if err = r.Update(ctx, &deployment); err != nil {
+			log.Error(err, "unable to reset force_reconciliation flag")
+			return
+		}
 	}
 
 	var bc remoteclients.BOSHClient
@@ -60,7 +68,7 @@ func (r *StemcellReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err err
 		return
 	}
 
-	if err = reconcileWithBOSH(ctx, log, r.Client, bc, &stemcell); err != nil {
+	if err = reconcileWithBOSH(ctx, log, r.Client, bc, &deployment); err != nil {
 		log.Error(err, "unable to reconcile with BOSH")
 		return
 	}
@@ -68,8 +76,8 @@ func (r *StemcellReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err err
 	return
 }
 
-func (r *StemcellReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *DeploymentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&boshv1.Stemcell{}).
+		For(&boshv1.Deployment{}).
 		Complete(r)
 }

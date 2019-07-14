@@ -29,63 +29,63 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// StemcellSpec defines the desired state of Stemcell
+// BaseImageSpec defines the desired state of BaseImage
 // +kubebuilder:subresource:status
-type StemcellSpec struct {
-	StemcellName string `json:"stemcellName"`
-	Version      string `json:"version"`
-	URL          string `json:"url"`
-	SHA1         string `json:"sha1"`
+type BaseImageSpec struct {
+	BaseImageName string `json:"baseImageName"`
+	Version       string `json:"version"`
+	URL           string `json:"url"`
+	SHA1          string `json:"sha1"`
 }
 
-// StemcellStatus defines the observed state of Stemcell
-type StemcellStatus struct {
-	Warning      string       `json:"warning"`
-	OriginalSpec StemcellSpec `json:"originalSpec"`
-	Available    bool         `json:"available"`
+// BaseImageStatus defines the observed state of BaseImage
+type BaseImageStatus struct {
+	Warning      string        `json:"warning"`
+	OriginalSpec BaseImageSpec `json:"originalSpec"`
+	Available    bool          `json:"available"`
 }
 
 // +kubebuilder:object:root=true
 
-// Stemcell is the Schema for the stemcells API
-type Stemcell struct {
+// BaseImage is the Schema for the baseImages API
+type BaseImage struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   StemcellSpec   `json:"spec,omitempty"`
-	Status StemcellStatus `json:"status,omitempty"`
+	Spec   BaseImageSpec   `json:"spec,omitempty"`
+	Status BaseImageStatus `json:"status,omitempty"`
 }
 
-func (s Stemcell) BeingDeleted() bool {
+func (s BaseImage) BeingDeleted() bool {
 	return !s.GetDeletionTimestamp().IsZero()
 }
 
-var stemcellFinalizer = strings.Join([]string{"stemcell", finalizerBase}, ".")
+var baseImageFinalizer = strings.Join([]string{"base-image", finalizerBase}, ".")
 
-func (s Stemcell) hasFinalizer() bool {
-	return containsString(s.GetFinalizers(), stemcellFinalizer)
+func (s BaseImage) hasFinalizer() bool {
+	return containsString(s.GetFinalizers(), baseImageFinalizer)
 }
 
-func (s *Stemcell) EnsureFinalizer() bool {
+func (s *BaseImage) EnsureFinalizer() bool {
 	changed := !s.hasFinalizer()
-	s.SetFinalizers(append(s.GetFinalizers(), stemcellFinalizer))
+	s.SetFinalizers(append(s.GetFinalizers(), baseImageFinalizer))
 	return changed
 }
 
-func (s *Stemcell) EnsureNoFinalizer() bool {
+func (s *BaseImage) EnsureNoFinalizer() bool {
 	changed := s.hasFinalizer()
-	s.SetFinalizers(removeString(s.GetFinalizers(), stemcellFinalizer))
+	s.SetFinalizers(removeString(s.GetFinalizers(), baseImageFinalizer))
 	return changed
 }
 
-func (s *Stemcell) PrepareToSave() (needsStatusUpdate bool) {
+func (s *BaseImage) PrepareToSave() (needsStatusUpdate bool) {
 	originalSpec := s.Status.OriginalSpec
 
-	if originalSpec.StemcellName == "" {
+	if originalSpec.BaseImageName == "" {
 		s.Status.OriginalSpec = s.Spec
 		needsStatusUpdate = true
 	} else {
-		mutated := s.Spec.StemcellName != originalSpec.StemcellName ||
+		mutated := s.Spec.BaseImageName != originalSpec.BaseImageName ||
 			s.Spec.Version != originalSpec.Version ||
 			s.Spec.URL != originalSpec.URL ||
 			s.Spec.SHA1 != originalSpec.SHA1
@@ -102,22 +102,22 @@ func (s *Stemcell) PrepareToSave() (needsStatusUpdate bool) {
 	return
 }
 
-func (s *Stemcell) CreateUnlessExists(
+func (s *BaseImage) CreateUnlessExists(
 	bc remoteclients.BOSHClient,
 	_ context.Context,
 	_ client.Client,
 ) error {
-	stemcellSpec := s.Status.OriginalSpec
+	baseImageSpec := s.Status.OriginalSpec
 
-	if present, err := bc.HasStemcell(
-		stemcellSpec.StemcellName,
-		stemcellSpec.Version,
+	if present, err := bc.HasBaseImage(
+		baseImageSpec.BaseImageName,
+		baseImageSpec.Version,
 	); err != nil {
 		return err
 	} else if !present {
-		if err := bc.UploadStemcell(
-			stemcellSpec.URL,
-			stemcellSpec.SHA1,
+		if err := bc.UploadBaseImage(
+			baseImageSpec.URL,
+			baseImageSpec.SHA1,
 		); err != nil {
 			return err
 		}
@@ -128,18 +128,18 @@ func (s *Stemcell) CreateUnlessExists(
 	return nil
 }
 
-func (s Stemcell) DeleteIfExists(bc remoteclients.BOSHClient) error {
-	stemcellSpec := s.Status.OriginalSpec
+func (s BaseImage) DeleteIfExists(bc remoteclients.BOSHClient) error {
+	baseImageSpec := s.Status.OriginalSpec
 
-	if present, err := bc.HasStemcell(
-		stemcellSpec.StemcellName,
-		stemcellSpec.Version,
+	if present, err := bc.HasBaseImage(
+		baseImageSpec.BaseImageName,
+		baseImageSpec.Version,
 	); err != nil {
 		return err
 	} else if present {
-		return bc.DeleteStemcell(
-			stemcellSpec.StemcellName,
-			stemcellSpec.Version,
+		return bc.DeleteBaseImage(
+			baseImageSpec.BaseImageName,
+			baseImageSpec.Version,
 		)
 	}
 
@@ -148,13 +148,13 @@ func (s Stemcell) DeleteIfExists(bc remoteclients.BOSHClient) error {
 
 // +kubebuilder:object:root=true
 
-// StemcellList contains a list of Stemcell
-type StemcellList struct {
+// BaseImageList contains a list of BaseImage
+type BaseImageList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Stemcell `json:"items"`
+	Items           []BaseImage `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Stemcell{}, &StemcellList{})
+	SchemeBuilder.Register(&BaseImage{}, &BaseImageList{})
 }

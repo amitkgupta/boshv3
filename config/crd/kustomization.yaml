@@ -3,7 +3,7 @@
 # It should be run by config/default
 resources:
 - bases/bosh.akgupta.ca_releases.yaml
-- bases/bosh.akgupta.ca_stemcells.yaml
+- bases/bosh.akgupta.ca_baseimages.yaml
 - bases/bosh.akgupta.ca_directors.yaml
 - bases/bosh.akgupta.ca_teams.yaml
 - bases/bosh.akgupta.ca_vmextensions.yaml
@@ -11,6 +11,7 @@ resources:
 - bases/bosh.akgupta.ca_networks.yaml
 - bases/bosh.akgupta.ca_compilations.yaml
 - bases/bosh.akgupta.ca_roles.yaml
+- bases/bosh.akgupta.ca_deployments.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
@@ -19,10 +20,10 @@ patches:
 - patches/additional_printer_columns_in_releases.yaml
 - patches/status_subresource_in_releases.yaml
 
-- patches/categories_in_stemcells.yaml
-- patches/nonempty_spec_properties_validations_in_stemcells.yaml
-- patches/additional_printer_columns_in_stemcells.yaml
-- patches/status_subresource_in_stemcells.yaml
+- patches/categories_in_baseimages.yaml
+- patches/nonempty_spec_properties_validations_in_baseimages.yaml
+- patches/additional_printer_columns_in_baseimages.yaml
+- patches/status_subresource_in_baseimages.yaml
 
 - patches/categories_in_directors.yaml
 - patches/nonempty_spec_properties_validations_in_directors.yaml
@@ -53,3 +54,8 @@ patches:
 
 - patches/categories_in_roles.yaml
 - patches/nonempty_spec_properties_validations_in_roles.yaml
+
+- patches/categories_in_deployments.yaml
+- patches/nonempty_spec_properties_validations_in_deployments.yaml
+- patches/additional_printer_columns_in_deployments.yaml
+- patches/status_subresource_in_deployments.yaml
