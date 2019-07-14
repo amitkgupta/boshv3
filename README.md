@@ -156,6 +156,48 @@ to associate with a `Compilation`, rather the necessary information is inlined i
 specification. `Compilation`s can be mutated, except for their `Director` reference. Deleting a
 `Compilation` will delete it from the corresponding BOSH Director.
 
+### Role
+
+The `Role` kind of resource provided by the `roles.bosh.akgupta.ca` CRD represents a BOSH job and its
+property configurations that traditionally live in the `jobs` section of each item in the `instance_groups`
+section of a BOSH deployment manifest. A notable difference is that each `Role` is decoupled from a given
+Deployment so that it can be re-used. A `Role` could be re-used within a Deployment, simply to reduce some
+duplication, but it is also intended to support easier definition of multiple topologies or colocation
+strategies for a single complex service. For example, `Role`s could be defined once for the Cloud Foundry
+Application Runtime (CFAR) and different Deployments (or sets of Deployments) could be used to define a
+highly colocated "single-VM" deployment of CFAR on the one hand, and a highly distributed deployment of
+CFAR with separate independently-scalable components.
+
+`Role`s are referenceable by name within Deployments. Creating one of these role resources involves
+specifying the source BOSH release and BOSH job for the role, and then any configuration properties for the
+job (see [specification](#role-1) below). In the future, a `Role` will allow defining multiple jobs that go
+together. Creating a `Role` resources doesn't directly result in creating anything within BOSH itself.
+Indeed, there is no reconcilation controller handling the `Role` type at all. `Roles`s
+can be mutated.
+
+### Deployment
+
+The `Deployment` kind of resource provided by the `deployments.bosh.akgupta.ca` CRD represents a BOSH
+deployment, and so it represents actually deploying software to clouds or container runtimes with BOSH.
+Each `Deployment` maps to a single-instance-group BOSH deployment. Generally, BOSH deployments allow
+specifying multiple instance groups, and specifying which groups should be deployed serially and which can
+be deployed in parallel with other instance groups. The "BOSH v3" API eschews the notion of deployment
+order management, and expects collaborating components in a larger system to be deployable and updatable
+independently, behaving gracefully when a component is running while one of its dependencies is not.
+
+In many ways, a `Deployment` is very similar to Kubernetes' native `Deployment` kind of resource provided by
+the `apps/v1` API version. With technologies like
+[BOSH process manager](https://github.com/cloudfoundry/bpm-release) (BPM) that enables running BOSH jobs in
+Linux containers via [`runc`](https://github.com/opencontainers/runc), which is the same tool used by
+Kubernetes container runtimes for spawning and running containers, the similarity is even stronger. For more
+on `runc` and how it fits in with Kubernetes, check out this
+[blog post from Twistlock](https://www.twistlock.com/2018/05/10/support-emerging-container-runtimes-runc-containerd-cri-o-beyond/).
+
+When creating a `Deployment`, the resulting deployment in BOSH will be created via the `Team` in the same
+namespace where the `Deployment` resource has been created. The link between a `Deployment` and a `Team` is
+implicit by virtue of being in the same namespace. `Deployment`s can be mutated. Deleting a `Deployment`
+custom resource will delete it from from the corresponding BOSH Director.
+
 ## Usage
 
 ### As a Cluster Administrator
@@ -487,6 +529,97 @@ bosh-system   vbox-admin   6          4     512   2048                  vbox-adm
 The `AVAILABLE` column will show `false` if the cloud-type config hasn't been successfully posted to the
 Director. The `WARNING` column will display a warning if you have mutated the `Director` property in the
 `Compilation` spec after initial creation.
+
+
+### Role
+
+```
+kind: Role
+spec:
+  source:
+    release: # Name of Release resource
+    job: # Name of the BOSH job within the BOSH release referenced by the above Release resource
+  properties: # Optional, arbitrary hash of job properties
+```
+
+There is nothing interesting to see about a `Role` resource via `kubectl get role`.
+
+### Deployment
+
+```
+kind: Deployment
+spec:
+  azs: # Array of strings where each is a name of an AZ resource that's been defined in the
+       # namespace
+  replicas: # Integer
+  containers:
+    - role: # String referencing the name of a Role resource that's been defined in the namespace
+      exported_configuration:
+        <external_link_name>: # This key will be the name that the provided link is provided as
+          internal_link: # String, representing the internal name of the link as defined in the
+                         # BOSH job spec
+          exported: # Boolean, determines whether this link can be consumed by other Deployments
+        ...
+      imported_configuration:
+        <external_link_name>: # This key will be the name that the consumed link is consumed from
+          internal_link: # String, representing the internal name of the link as defined in the
+                         # BOSH job spec
+          imported_from: # Optional string referencing the name of another Deployment from which
+                         # to consume the link
+        ...
+      resources:
+        ram: # Positive integer representing RAM in MB for running the role in each replica
+        cpu: # Positive integer representing CPU for running the role in each replica
+        ephemeral_disk_size: # Positive integer representing ephemeral disk size in MB for the
+                             # role in each replica
+        persistent_disk_size: # Positive integer representing persistent disk size in MB for the
+                              # role in each replica
+    - ...
+  extensions: # Array of strings where each is a name of an Extension resource that's been defined
+              # in the namespace
+  base_image: # String referencing the name of a BaseImage resource that's been defined in the
+              # namespace
+  network: # String referencing the name of a Network resource that's been defined in the namespace
+  update_strategy:
+    min_ready_seconds: # Integer representing the number of seconds to wait before BOSH checks that
+                       # the started containers are running and healthy
+    max_ready_seconds: # Optional integer representing the number of seconds after which BOSH will
+                       # give up waiting for started containers to be running and healthy
+    max_unavailable_percent: # Percentage of total replicas that can be down at one time when
+                             # updating a deployment; use this or max_unavailable_replicas, but not
+                             # both
+    max_unavailable_replicas: # Number of total replicas that can be down at one time when updating
+                              # a deployment; use this or max_unavailable_percent, but not both
+    type: # Optional string representing the update type; the supported options and default behaviour
+          # when not specified is determined by BOSH; see
+          # https://bosh.io/docs/changing-deployment-vm-strategy/
+    force_reconciliation: # Optional boolean which will force a BOSH deploy task to run even if
+                          # Kubernetes detects no changes to this resource itself; useful if you have
+                          # changed something else like a Role definition referenced by this
+                          # Deployment; note that the Deployment reconciliation controller always sets
+                          # this property back to false so that setting it to true and submitting it
+                          # to the API again forces reconciliation again.
+```
+
+You can inspect this resource and expect output like the following:
+
+```
+$ kubectl get deployment --all-namespaces
+NAMESPACE   NAME        REPLICAS   AVAILABLE   NETWORK   BASE IMAGE
+test        zookeeper   5                      nw1       warden-xenial-315.41
+```
+
+The above is what you'll see before the Director has received the deployment manifest. After it has
+deployed successfully, you'll see:
+
+```
+$ kubectl get deployment --all-namespaces
+NAMESPACE   NAME        REPLICAS   AVAILABLE   NETWORK   BASE IMAGE
+test        zookeeper   5          true        nw1       warden-xenial-315.41
+```
+
+The `AVAILABLE` column will show `false` if the deployment manifest hasn't been successfully posted to the
+Director.
 
 ## Development
 
