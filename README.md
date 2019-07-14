@@ -8,10 +8,10 @@ The goal of this project is to explore:
 - a technology: [Kubebuilder](https://book.kubebuilder.io/) and Kubernetes [Custom Resource Definitions](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) (CRDs)
 
 This repository contains source code and [make](https://www.gnu.org/software/make/manual/make.html) tasks
-to build and install CRDs and controllers to a Kubernetes cluster. They extend the Kubernetes API to expose
-resources to manage tenancy to multiple BOSH Directors and enable tenants to create BOSH resources. In some
-sense this API extension is a shim in front of the BOSH API to explore what a different style of API for BOSH
-could be like.
+to build and install CRDs and controllers to a Kubernetes cluster. They extend the Kubernetes API to
+expose resources to manage tenancy to multiple BOSH Directors and enable tenants to create BOSH
+resources. In some sense this API extension is a shim in front of the BOSH API to explore what a
+different style of API for BOSH could be like.
 
 ## Table of Contents
 
@@ -79,33 +79,33 @@ generated for the BOSH service administrator.
 
 ### Team
 
-The `Team` kind of resource is provided by the `teams.bosh.akgupta.ca` CRD. Each team must reference exactly
-one `Director`. A developer would create a `Team` in his or her namespace, referencing a `Director`. Then,
-all subsequent BOSH custom resources created within that namespace would be scoped to a dedicated tenant
-within that BOSH Director as represented by the namespace's `Team`. Creating one of these resources creates
-a client in the referenced Director's UAA and in theory it would just have admin access within a BOSH Team
-generated for this purpose. There should be at most one `Team` per namespace. Multiple `Team`s can refer to
-the same `Director`. `Team`s cannot be mutated. Deleting a `Team` custom resource will delete the client
-from the corresponding BOSH Director's UAA (and the Kubernetes `Secret` resource that is dynamically created
-to store the UAA client secret).
+The `Team` kind of resource is provided by the `teams.bosh.akgupta.ca` CRD. Each team must reference
+exactly one `Director`. A developer would create a `Team` in his or her namespace, referencing a
+`Director`. Then, all subsequent BOSH custom resources created within that namespace would be scoped to a
+dedicated tenant within that BOSH Director as represented by the namespace's `Team`. Creating one of
+these resources creates a client in the referenced Director's UAA and in theory it would just have admin
+access within a BOSH Team generated for this purpose. There should be at most one `Team` per namespace.
+Multiple `Team`s can refer to the same `Director`. `Team`s cannot be mutated. Deleting a `Team` custom
+resource will delete the client from the corresponding BOSH Director's UAA (and the Kubernetes `Secret`
+resource that is dynamically created to store the UAA client secret).
 
 ### Release
 
-The `Release` kind of resource provided by the `releases.bosh.akgupta.ca` CRD represents BOSH releases that
-can be uploaded to the Director. Creating one of these resources requires providing a URL for the BOSH
-release. This release will be uploaded via the `Team` in the same namespace where the `Release` resource has
-been created. The link between a `Release` and a `Team` is implicit by virtue of being in the same
-namespace. `Release`s cannot be mutated. Deleting a `Release` custom resource will delete the release from
-the corresponding BOSH Director.
+The `Release` kind of resource provided by the `releases.bosh.akgupta.ca` CRD represents BOSH releases
+that can be uploaded to the Director. Creating one of these resources requires providing a URL for the
+BOSH release. This release will be uploaded via the `Team` in the same namespace where the `Release`
+resource has been created. The link between a `Release` and a `Team` is implicit by virtue of being in
+the same namespace. `Release`s cannot be mutated. Deleting a `Release` custom resource will delete the
+release from the corresponding BOSH Director.
 
 ### Stemcell
 
 The `Stemcell` kind of resource provided by the `stemcells.bosh.akgupta.ca` CRD represents BOSH stemcells
-that can be uploaded to the Director. Creating one of these resources requires providing a URL for the BOSH
-stemcell. This stemcell will be uploaded via the `Team` in the same namespace where the `Stemcell` resource
-has been created. The link between a `Stemcell` and a `Team` is implicit by virtue of being in the same
-namespace. `Stemcell`s cannot be mutated. Deleting a `Stemcell` custom resource will delete the stemcell
-from the corresponding BOSH Director.
+that can be uploaded to the Director. Creating one of these resources requires providing a URL for the
+BOSH stemcell. This stemcell will be uploaded via the `Team` in the same namespace where the `Stemcell`
+resource has been created. The link between a `Stemcell` and a `Team` is implicit by virtue of being in
+the same namespace. `Stemcell`s cannot be mutated. Deleting a `Stemcell` custom resource will delete the
+stemcell from the corresponding BOSH Director.
 
 ### VM Extension
 
@@ -113,48 +113,50 @@ The `VMExtension` kind of resource provided by the `vmextensions.bosh.akgupta.ca
 extensions that traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic
 "Cloud Config" and treats VM Extensions as their own, first-class resource. These will be referenceable by
 name within Instance Groups (not yet implemented). Creating one of these VM Extension resources requires
-simply providing `cloud_properties`. This VM extension will be created via the `Team` in the same namespace
-where the `VMExtension` resource has been created. The link between a `VMExtension` and a `Team` is implicit
-by virtue of being in the same namespace.  `VMExtension`s cannot be mutated. Deleting a `VMExtension` custom
-resource will delete it from from the corresponding BOSH Director.
+simply providing `cloud_properties`. This VM extension will be created via the `Team` in the same
+namespace where the `VMExtension` resource has been created. The link between a `VMExtension` and a `Team`
+is implicit by virtue of being in the same namespace.  `VMExtension`s cannot be mutated. Deleting a
+`VMExtension` custom resource will delete it from from the corresponding BOSH Director.
 
 ### AZ
 
-The `AZ` kind of resource provided by the `azs.bosh.akgupta.ca` CRD represents AZs (Availability Zones) that
-traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic "Cloud Config" and
-treats AZs as their own, first-class resource. These will be referenceable by name within Instance Groups
-(not yet implemented). Creating one of these AZ resources requires simply providing `cloud_properties`. This
-AZ will be created via the `Team` in the same namespace where the `AZ` resource has been created. The link
-between an `AZ` and a `Team` is implicit by virtue of being in the same namespace.  `AZ`s cannot be mutated.
-Deleting an `AZ` custom resource will delete it from from the corresponding BOSH Director.
+The `AZ` kind of resource provided by the `azs.bosh.akgupta.ca` CRD represents AZs (Availability Zones)
+that traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic "Cloud
+Config" and treats AZs as their own, first-class resource. These will be referenceable by name within
+Instance Groups (not yet implemented). Creating one of these AZ resources requires simply providing
+`cloud_properties`. This AZ will be created via the `Team` in the same namespace where the `AZ` resource
+has been created. The link between an `AZ` and a `Team` is implicit by virtue of being in the same
+namespace.  `AZ`s cannot be mutated. Deleting an `AZ` custom resource will delete it from from the
+corresponding BOSH Director.
 
 ### Network
 
 The `Network` kind of resource provided by the `networks.bosh.akgupta.ca` CRD represents networks that
-traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic "Cloud Config" and
-treats networks as their own, first-class resource. These will be referenceable by name within Instance 
-Groups (not yet implemented). Creating one of these network resources involves specifying various properties
-(see [specification](#network-1) below), one of which is `subnets`. Each `subnet` in turn references a list
-of `azs` by name. These names should match the names of `AZ`s created within the same namespace. This
-network will be created via the `Team` in the same namespace where the `Network` resource has been created.
-The link between a `Network` and a `Team` is implicit by virtue of being in the same namespace. `Network`s
-cannot be mutated. Deleting an `Network` custom resource will delete it from from the corresponding BOSH
-Director.
+traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic "Cloud Config"
+and treats networks as their own, first-class resource. These will be referenceable by name within
+Instance Groups (not yet implemented). Creating one of these network resources involves specifying
+various properties (see [specification](#network-1) below), one of which is `subnets`. Each `subnet` in
+turn references a list of `azs` by name. These names should match the names of `AZ`s created within the
+same namespace. This network will be created via the `Team` in the same namespace where the `Network`
+resource has been created. The link between a `Network` and a `Team` is implicit by virtue of being in
+the same namespace. `Network`s cannot be mutated. Deleting an `Network` custom resource will delete it
+from from the corresponding BOSH Director.
 
 ### Compilation
 
 The `Compilation` kind of resource provided by the `compilations.bosh.akgupta.ca` CRD represents
 compilation blocks that traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex,
-monolithic "Cloud Config" and treats compilation as its own, first-class resource. Unlike some of the other
-Cloud Config resources above, `Compilation`s must be created by the BOSH service administrator rather than
-the developer. Each `Compilation` must reference a `Director`, and there can be at most one `Compilation`
-per `Director`. A `Compilation` associated with a `Director` will implicitly be used when deploying any
-Instance Groups (not yet implemented) via a `Team` associated with that `Director`. Creating one of these
-compilation resources involves specifying various properties (see [specification](#compilation-1) below),
-including properties used to define an AZ and subnet. The user does not define separate `AZ` and `Network`
-resources to associate with a `Compilation`, rather the necessary information is inlined into the
-`Compilation` specification. `Compilation`s can be mutated, except for their `Director` reference. Deleting a
-`Compilation` will delete it from the corresponding BOSH Director.
+monolithic "Cloud Config" and treats compilation as its own, first-class resource. Unlike some of the
+other Cloud Config resources above, `Compilation`s must be created by the BOSH service administrator
+rather than the developer. Each `Compilation` must reference a `Director`, and there can be at most one
+`Compilation` per `Director`. A `Compilation` associated with a `Director` will implicitly be used when
+deploying any Instance Groups (not yet implemented) via a `Team` associated with that `Director`.
+Creating one of these compilation resources involves specifying various properties (see
+[specification](#compilation-1) below), including properties used to define an AZ and subnet. The user
+does not define separate `AZ` and `Network` resources to associate with a `Compilation`, rather the
+necessary information is inlined into the `Compilation` specification. `Compilation`s can be mutated,
+except for their `Director` reference. Deleting a `Compilation` will delete it from the corresponding
+BOSH Director.
 
 ## Usage
 
@@ -174,15 +176,15 @@ should never be given access to the BOSH system namespace.
 For every real-world BOSH Director you'd like to expose to developers, create a `Director` resource in the
 BOSH system namespace. For each Director, you will first need to create a `Secret` resource containing the
 UAA admin client secret for that Director -- this too must reside in the BOSH system namespace. Once you
-create a `Director`, a `Team` and a `Secret` for that `Team` will automatically be generated to enable you to
-create `Compilation` resources for that `Director`. Do not tamper with that `Team` or `Secret`.
+create a `Director`, a `Team` and a `Secret` for that `Team` will automatically be generated to enable
+you to create `Compilation` resources for that `Director`. Do not tamper with that `Team` or `Secret`.
 
 You will need to create one `Compilation` resource per `Director` in the BOSH system namespace, so that
 consumers using those `Directors` will be able to successfully use BOSH to deploy anything.
 
 When consumers request `Team`s, the controller will dynamically generate `Secret` resources to contain the
-UAA client secrets corresponding to each `Team` -- those will be generated within this namespace and should
-not be tampered with.
+UAA client secrets corresponding to each `Team` -- those will be generated within this namespace and
+should not be tampered with.
 
 The following `Director` YAML skeleton includes instructions for how you would find the right values to
 populate:
@@ -237,9 +239,9 @@ spec:
 
 ### As a Developer
 
-As a developer or user of Kubernetes, each `Director` resource can be regarded as a service offering and you
-would like tenancy within one of the Directors to use it to do BOSH-y thing. Start by creating a `Team` in
-your namespace. For example:
+As a developer or user of Kubernetes, each `Director` resource can be regarded as a service offering and
+you would like tenancy within one of the Directors to use it to do BOSH-y thing. Start by creating a
+`Team` in your namespace. For example:
 
 ```
 apiVersion: "bosh.akgupta.ca/v1"
@@ -269,10 +271,11 @@ spec:
   ca_cert: # CA certificate for the controller to trust when communicating with the BOSH Director
   uaa_url: # URL for the BOSH Director's UAA
   uaa_client: # Name of the UAA admin client
-  uaa_client_secret: # Name of the Kubernetes Secret resource where you'll store the client secret of the
-                     # UAA admin client. The secret value must be stored in the "secret" key within the
-                     # data stored in the Secret resource.
-  uaa_ca_cert: # CA certificate for the controller to trust when communicating with the BOSH Director's UAA
+  uaa_client_secret: # Name of the Kubernetes Secret resource where you'll store the client secret
+                     # of the UAA admin client. The secret value must be stored in the "secret" key
+                     # within the data stored in the Secret resource.
+  uaa_ca_cert: # CA certificate for the controller to trust when communicating with the BOSH
+               # Director's UAA
 ```
 
 You can inspect this resource and expect output like the following:
@@ -280,7 +283,7 @@ You can inspect this resource and expect output like the following:
 ```
 $ kubectl get director --all-namespaces
 NAMESPACE     NAME         URL                    UAA CLIENT
-<BOSH_SYSTEM_NAMESPACE> # must be the same namespace where the controller was deployed   vbox-admin   https://192.168.50.6   uaa_admin
+bosh-system   vbox-admin   https://192.168.50.6   uaa_admin
 ```
 
 ### Team
@@ -346,12 +349,12 @@ NAMESPACE   NAME              RELEASE NAME   VERSION   AVAILABLE   WARNING
 test        zookeeper-0.0.9   zookeeper      0.0.9     true
 ```
 
-The `AVAILABLE` column will show `false` if the Director has not been successfully fetched the release. The
-`WARNING` column will display a warning if you have mutated the `Release` spec after initial creation. The
-`RELEASE NAME` and `VERSION` columns display the originally provided values and these are the values that
-will continue to be used. If you do attempt to mutate the `Release` resource, you can see your (ignored)
-user-provided values with the `-o wide` flag, along with the original values and (ignored, possibly-muted)
-subsequent user-provided values for URL and SHA1.
+The `AVAILABLE` column will show `false` if the Director has not been successfully fetched the release.
+The `WARNING` column will display a warning if you have mutated the `Release` spec after initial
+creation. The `RELEASE NAME` and `VERSION` columns display the originally provided values and these are
+the values that will continue to be used. If you do attempt to mutate the `Release` resource, you can see
+your (ignored) user-provided values with the `-o wide` flag, along with the original values and (ignored,
+possibly-muted) subsequent user-provided values for URL and SHA1.
 
 ### Stemcell
 
@@ -364,8 +367,8 @@ spec:
   sha1: # SHA1 checksum of the BOSH stemcell artifact for the Director to confirm
 ```
 
-The behaviour of `kubectl get stemcell` is essentially identical to the behaviour for `kubectl get release`
-described in the previous sub-section.
+The behaviour of `kubectl get stemcell` is essentially identical to the behaviour for 
+`kubectl get release` described in the previous sub-section.
 
 ### VM Extension
 
@@ -454,13 +457,15 @@ spec:
   az_cloud_properties: # Optional, arbitrary hash of AZ cloud properties
   cpu: # Positive integer representing CPU for each compilation worker
   ram: # Positive integer representing RAM in MB for each compilation worker
-  ephemeral_disk_size: # Positive integer representing ephemeral disk size in MB for each compilation worker
+  ephemeral_disk_size: # Positive integer representing ephemeral disk size in MB for each
+                       # compilation worker
   vm_cloud_properties: # Optional, arbitrary hash of VM cloud properties
   network_type: # Either "manual" or "dynamic"
   subnet_range: # CIDR range of subnet into which compilation workers are deployed
   subnet_gateway: # Gateway IP of subnet into which compilation workers are deployed
   subnet_dns: # Array if DNS nameserver IPs each compilation worker is configured with
-  subnet_reserved: # Optional, array of IPs or IP intervals that compilation workers will not be deployed to
+  subnet_reserved: # Optional, array of IPs or IP intervals that compilation workers will not
+                   # be deployed to
   subnet_cloud_properties: # Optional, arbitrary hash of subnet cloud properties
   director: # Name of a Director custom resource
 ```
@@ -490,9 +495,10 @@ Director. The `WARNING` column will display a warning if you have mutated the `D
 ### Requirements
 
 You will need to have some prerequisites installed such as `go`, `make`, `kubectl`, `docker`, `git` and
-`kubebuilder` installed. You should have the `bosh` CLI installed so you can target BOSH Directors directly
-and manually test that the right resources/tasks are being created/run in BOSH. This project manages UAA
-clients associated with BOSH Directors, so it can be useful to have the `uaac` CLI installed as well.
+`kubebuilder` installed. You should have the `bosh` CLI installed so you can target BOSH Directors
+directly and manually test that the right resources/tasks are being created/run in BOSH. This project
+manages UAA clients associated with BOSH Directors, so it can be useful to have the `uaac` CLI installed
+as well.
 
 ### Makefile
 
@@ -513,21 +519,21 @@ $ git checkout develop
 To create new CRDs and reconciliation controllers for managing BOSH resources, use
 
 ```
-$ kubebuilder create api --controller --example=false --group=bosh --kind=<SomeKind> --resource --version=v1
-
+$ kubebuilder create api --controller --example=false --group=bosh --kind=<SomeKind> --resource \
+  --version=v1
 ```
 
 You will need to update code and YAML templates in the `api`, `config`, and `controllers` subdirectories.
-The [Kubebuilder Book](https://book.kubebuilder.io/introduction.html) is a good, albeit rough, resource for
-learning some of the requisite concepts in a practical way. See especially the sections on
+The [Kubebuilder Book](https://book.kubebuilder.io/introduction.html) is a good, albeit rough, resource
+for learning some of the requisite concepts in a practical way. See especially the sections on
 [Designing an API](https://book.kubebuilder.io/cronjob-tutorial/api-design.html), 
 [Implementing a controller](https://book.kubebuilder.io/cronjob-tutorial/controller-implementation.html),
 and [Using Finalizers](https://book.kubebuilder.io/reference/using-finalizers.html).
 
-NOTE: Replace the `--controller` flag with `--controller=false` or the `--resource` flag with `--resource=false`
-if you don't need a reconciliation controller or don't need a CRD, respectively. For example, the `Director`
-kind of resource does not need reconciliation, it just needs to be referenceable from `Team`s, so it was
-created with `--controller=false` in the above `kubebuilder` command.
+NOTE: Replace the `--controller` flag with `--controller=false` or the `--resource` flag with 
+`--resource=false` if you don't need a reconciliation controller or don't need a CRD, respectively. For
+example, the `Director` kind of resource does not need reconciliation, it just needs to be referenceable
+from `Team`s, so it was created with `--controller=false` in the above `kubebuilder` command.
 
 ### Build, Run, and Test
 
