@@ -1,26 +1,30 @@
-1. jobs_configuration
-	name
-	release
+1. Roles
+	source:
+		job
+		release
 	properties
-	provides ???
-	consumes ???
 
-2. instance_groups
-	name
+2. Deployment
 	azs
-	instances
-	jobs
-	vm_resources
-		cpu
-		ram
-		ephemeral_disk_size
-	vm_extensions
-	stemcell
-	persistent_disk
-	networks
-		name
-		static_ips
-		default
+	replicas
+	containers:
+		- role:
+		  provides:
+			xx:
+				as(?): string
+			  	shared(?): bool
+		  consumes:
+			xx:
+				from(?): string
+				deployment(?): string
+		  resources
+			cpu
+			ram
+			ephemeral_disk_size
+			persistent_disk_size
+	extensions
+	base_image
+	network
 	update
 		canaries
 		max_in_flight
@@ -28,7 +32,7 @@
 
 3. errands?
 
-4. IGs scale subr???
+4. Deployment scale subr???
 
 5. variables
 	name

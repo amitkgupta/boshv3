@@ -26,3 +26,6 @@ resources:
 - group: bosh
   version: v1
   kind: Compilation
+- group: bosh
+  version: v1
+  kind: Role

@@ -10,6 +10,7 @@ resources:
 - bases/bosh.akgupta.ca_azs.yaml
 - bases/bosh.akgupta.ca_networks.yaml
 - bases/bosh.akgupta.ca_compilations.yaml
+- bases/bosh.akgupta.ca_roles.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
@@ -49,3 +50,6 @@ patches:
 - patches/nonempty_spec_properties_validations_in_compilations.yaml
 - patches/additional_printer_columns_in_compilations.yaml
 - patches/status_subresource_in_compilations.yaml
+
+- patches/categories_in_roles.yaml
+- patches/nonempty_spec_properties_validations_in_roles.yaml

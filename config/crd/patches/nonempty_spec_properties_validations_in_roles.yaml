@@ -1,0 +1,19 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: roles.bosh.akgupta.ca
+spec:
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            source:
+              type: object
+              properties:
+                job:
+                  type: string
+                  minLength: 1
+                release:
+                  type: string
+                  minLength: 1
