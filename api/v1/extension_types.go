@@ -30,14 +30,14 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// VMExtensionSpec defines the desired state of VMExtension
+// ExtensionSpec defines the desired state of Extension
 // +kubebuilder:subresource:status
-type VMExtensionSpec struct {
+type ExtensionSpec struct {
 	CloudProperties *runtime.RawExtension `json:"cloud_properties"`
 }
 
-// VMExtensionStatus defines the observed state of VMExtension
-type VMExtensionStatus struct {
+// ExtensionStatus defines the observed state of Extension
+type ExtensionStatus struct {
 	Warning                 string                `json:"warning"`
 	OriginalCloudProperties *runtime.RawExtension `json:"cloud_properties"`
 	Available               bool                  `json:"available"`
@@ -45,51 +45,51 @@ type VMExtensionStatus struct {
 
 // +kubebuilder:object:root=true
 
-// VMExtension is the Schema for the vmextensions API
-type VMExtension struct {
+// Extension is the Schema for the extensions API
+type Extension struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   VMExtensionSpec   `json:"spec,omitempty"`
-	Status VMExtensionStatus `json:"status,omitempty"`
+	Spec   ExtensionSpec   `json:"spec,omitempty"`
+	Status ExtensionStatus `json:"status,omitempty"`
 }
 
-func (v VMExtension) BeingDeleted() bool {
-	return !v.GetDeletionTimestamp().IsZero()
+func (e Extension) BeingDeleted() bool {
+	return !e.GetDeletionTimestamp().IsZero()
 }
 
-var vmExtensionFinalizer = strings.Join([]string{"vm-extension", finalizerBase}, ".")
+var extensionFinalizer = strings.Join([]string{"extension", finalizerBase}, ".")
 
-func (v VMExtension) hasFinalizer() bool {
-	return containsString(v.GetFinalizers(), vmExtensionFinalizer)
+func (e Extension) hasFinalizer() bool {
+	return containsString(e.GetFinalizers(), extensionFinalizer)
 }
 
-func (v *VMExtension) EnsureFinalizer() bool {
-	changed := !v.hasFinalizer()
-	v.SetFinalizers(append(v.GetFinalizers(), vmExtensionFinalizer))
+func (e *Extension) EnsureFinalizer() bool {
+	changed := !e.hasFinalizer()
+	e.SetFinalizers(append(e.GetFinalizers(), extensionFinalizer))
 	return changed
 }
 
-func (v *VMExtension) EnsureNoFinalizer() bool {
-	changed := v.hasFinalizer()
-	v.SetFinalizers(removeString(v.GetFinalizers(), vmExtensionFinalizer))
+func (e *Extension) EnsureNoFinalizer() bool {
+	changed := e.hasFinalizer()
+	e.SetFinalizers(removeString(e.GetFinalizers(), extensionFinalizer))
 	return changed
 }
 
-func (v *VMExtension) PrepareToSave() (needsStatusUpdate bool) {
-	originalCloudProperties := v.Status.OriginalCloudProperties
+func (e *Extension) PrepareToSave() (needsStatusUpdate bool) {
+	originalCloudProperties := e.Status.OriginalCloudProperties
 
 	if originalCloudProperties == nil {
-		v.Status.OriginalCloudProperties = v.Spec.CloudProperties
+		e.Status.OriginalCloudProperties = e.Spec.CloudProperties
 		needsStatusUpdate = true
 	} else {
-		mutated := v.Spec.CloudProperties.String() != originalCloudProperties.String()
+		mutated := e.Spec.CloudProperties.String() != originalCloudProperties.String()
 
-		if mutated && v.Status.Warning == "" {
-			v.Status.Warning = resourceMutationWarning
+		if mutated && e.Status.Warning == "" {
+			e.Status.Warning = resourceMutationWarning
 			needsStatusUpdate = true
-		} else if !mutated && v.Status.Warning != "" {
-			v.Status.Warning = ""
+		} else if !mutated && e.Status.Warning != "" {
+			e.Status.Warning = ""
 			needsStatusUpdate = true
 		}
 	}
@@ -97,47 +97,47 @@ func (v *VMExtension) PrepareToSave() (needsStatusUpdate bool) {
 	return
 }
 
-func (v VMExtension) InternalName() string {
+func (e Extension) InternalName() string {
 	return strings.Join([]string{
-		"vmextension",
-		v.GetNamespace(),
-		v.GetName(),
+		"extension",
+		e.GetNamespace(),
+		e.GetName(),
 	}, "-")
 }
 
-func (v *VMExtension) CreateUnlessExists(
+func (e *Extension) CreateUnlessExists(
 	bc remoteclients.BOSHClient,
 	_ context.Context,
 	_ client.Client,
 ) error {
 	if err := bc.CreateVMExtension(
-		v.InternalName(),
+		e.InternalName(),
 		remoteclients.VMExtension{
-			Name:            v.InternalName(),
-			CloudProperties: v.Status.OriginalCloudProperties,
+			Name:            e.InternalName(),
+			CloudProperties: e.Status.OriginalCloudProperties,
 		},
 	); err != nil {
 		return err
 	}
 
-	v.Status.Available = true
+	e.Status.Available = true
 
 	return nil
 }
 
-func (v VMExtension) DeleteIfExists(bc remoteclients.BOSHClient) error {
-	return bc.DeleteVMExtension(v.InternalName())
+func (e Extension) DeleteIfExists(bc remoteclients.BOSHClient) error {
+	return bc.DeleteVMExtension(e.InternalName())
 }
 
 // +kubebuilder:object:root=true
 
-// VMExtensionList contains a list of VMExtension
-type VMExtensionList struct {
+// ExtensionList contains a list of Extension
+type ExtensionList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []VMExtension `json:"items"`
+	Items           []Extension `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&VMExtension{}, &VMExtensionList{})
+	SchemeBuilder.Register(&Extension{}, &ExtensionList{})
 }

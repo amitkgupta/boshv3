@@ -107,16 +107,16 @@ resource has been created. The link between a `Stemcell` and a `Team` is implici
 the same namespace. `Stemcell`s cannot be mutated. Deleting a `Stemcell` custom resource will delete the
 stemcell from the corresponding BOSH Director.
 
-### VM Extension
+### Extension
 
-The `VMExtension` kind of resource provided by the `vmextensions.bosh.akgupta.ca` CRD represents VM
-extensions that traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic
-"Cloud Config" and treats VM Extensions as their own, first-class resource. These will be referenceable by
-name within Instance Groups (not yet implemented). Creating one of these VM Extension resources requires
-simply providing `cloud_properties`. This VM extension will be created via the `Team` in the same
-namespace where the `VMExtension` resource has been created. The link between a `VMExtension` and a `Team`
-is implicit by virtue of being in the same namespace.  `VMExtension`s cannot be mutated. Deleting a
-`VMExtension` custom resource will delete it from from the corresponding BOSH Director.
+The `Extension` kind of resource provided by the `extensions.bosh.akgupta.ca` CRD represents VM extensions
+that traditionally live in a "Cloud Config". This "BOSH v3" API eschews the complex, monolithic
+"Cloud Config" and treats Extensions as their own, first-class resource. These will be referenceable by
+name within Instance Groups (not yet implemented). Creating one of these Extension resources requires
+simply providing `cloud_properties`. This extension will be created via the `Team` in the same namespace
+where the `Extension` resource has been created. The link between an `Extension` and a `Team` is implicit
+by virtue of being in the same namespace.  `Extension`s cannot be mutated. Deleting an `Extension` custom
+resource will delete it from from the corresponding BOSH Director.
 
 ### AZ
 
@@ -253,8 +253,8 @@ spec:
   director: <DIRECTOR_NAME>
 ```
 
-You simply need to ensure that `<DIRECTOR_NAME>` matches one of the available `Director` resources offered by
-the cluster administrator.
+You simply need to ensure that `<DIRECTOR_NAME>` matches one of the available `Director` resources offered
+by the cluster administrator.
 
 Once you have a `Team` in your namespace you can manage BOSH resources like stemcells and releases by
 creating corresponding custom resources in your namespace. See below on detailed specifications for each
@@ -370,10 +370,10 @@ spec:
 The behaviour of `kubectl get stemcell` is essentially identical to the behaviour for 
 `kubectl get release` described in the previous sub-section.
 
-### VM Extension
+### Extension
 
 ```
-kind: VMExtension
+kind: Extension
 spec:
   cloud_properties:
     # YAML or JSON of CPI-specific Cloud Properties for VM extensions
@@ -382,7 +382,7 @@ spec:
 You can inspect this resource and expect output like the following:
 
 ```
-$ kubectl get vmextension --all-namespaces
+$ kubectl get extension --all-namespaces
 NAMESPACE   NAME                AVAILABLE   WARNING
 test        port-tcp-443-8443   false
 ```
@@ -396,7 +396,7 @@ test        port-tcp-443-8443   true
 ```
 
 The `AVAILABLE` column will show `false` if the cloud-type config hasn't been successfully posted to the
-Director. The `WARNING` column will display a warning if you have mutated the `VMExtension` spec after
+Director. The `WARNING` column will display a warning if you have mutated the `Extension` spec after
 initial creation.
 
 ### AZ
@@ -408,7 +408,7 @@ spec:
     # YAML or JSON of CPI-specific Cloud Properties for AZs
 ```
 
-The behaviour of `kubectl get az` is essentially identical to the behaviour for `kubectl get vmextension`
+The behaviour of `kubectl get az` is essentially identical to the behaviour for `kubectl get extension`
 described in the previous sub-section.
 
 ### Network
@@ -459,7 +459,7 @@ spec:
   ram: # Positive integer representing RAM in MB for each compilation worker
   ephemeral_disk_size: # Positive integer representing ephemeral disk size in MB for each
                        # compilation worker
-  vm_cloud_properties: # Optional, arbitrary hash of VM cloud properties
+  cloud_properties: # Optional, arbitrary hash of (VM) cloud properties
   network_type: # Either "manual" or "dynamic"
   subnet_range: # CIDR range of subnet into which compilation workers are deployed
   subnet_gateway: # Gateway IP of subnet into which compilation workers are deployed

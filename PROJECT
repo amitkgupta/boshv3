@@ -16,7 +16,7 @@ resources:
   kind: Team
 - group: bosh
   version: v1
-  kind: VMExtension
+  kind: Extension
 - group: bosh
   version: v1
   kind: AZ

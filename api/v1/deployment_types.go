@@ -362,7 +362,7 @@ func (d Deployment) instanceGroup(ctx context.Context, c client.Client) (remotec
 	}
 
 	for i, extensionName := range d.Spec.Extensions {
-		var extension VMExtension
+		var extension Extension
 		if err := c.Get(
 			ctx,
 			types.NamespacedName{

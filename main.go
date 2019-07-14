@@ -93,13 +93,13 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Team")
 		os.Exit(1)
 	}
-	err = (&controllers.VMExtensionReconciler{
+	err = (&controllers.ExtensionReconciler{
 		Client:              mgr.GetClient(),
-		Log:                 ctrl.Log.WithName("controllers").WithName("VMExtension"),
+		Log:                 ctrl.Log.WithName("controllers").WithName("Extension"),
 		BOSHSystemNamespace: boshSystemNamespace,
 	}).SetupWithManager(mgr)
 	if err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "VMExtension")
+		setupLog.Error(err, "unable to create controller", "controller", "Extension")
 		os.Exit(1)
 	}
 	err = (&controllers.AZReconciler{

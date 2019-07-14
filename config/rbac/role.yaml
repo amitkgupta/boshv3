@@ -109,6 +109,26 @@ rules:
 - apiGroups:
   - bosh.akgupta.ca
   resources:
+  - extensions
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
+  - extensions/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - bosh.akgupta.ca
+  resources:
   - networks
   verbs:
   - get
@@ -162,26 +182,6 @@ rules:
   - bosh.akgupta.ca
   resources:
   - teams/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
-  - bosh.akgupta.ca
-  resources:
-  - vmextensions
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - bosh.akgupta.ca
-  resources:
-  - vmextensions/status
   verbs:
   - get
   - update

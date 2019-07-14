@@ -37,7 +37,7 @@ type CompilationSpec struct {
 	CPU                   int                   `json:"cpu"`
 	RAM                   int                   `json:"ram"`
 	EphemeralDiskSize     int                   `json:"ephemeral_disk_size"`
-	VMCloudProperties     *runtime.RawExtension `json:"vm_cloud_properties,omitempty"`
+	CloudProperties       *runtime.RawExtension `json:"cloud_properties,omitempty"`
 	NetworkType           string                `json:"network_type"`
 	SubnetRange           string                `json:"subnet_range"`
 	SubnetGateway         string                `json:"subnet_gateway"`
@@ -167,7 +167,7 @@ func (c Compilation) boshClientCompilation() remoteclients.Compilation {
 			RAM:               c.Spec.RAM,
 			EphemeralDiskSize: c.Spec.EphemeralDiskSize,
 		},
-		CloudProperties:     c.Spec.VMCloudProperties,
+		CloudProperties:     c.Spec.CloudProperties,
 		Network:             c.InternalName(),
 		ReuseCompilationVMs: true,
 	}

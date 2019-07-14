@@ -1,5 +1,5 @@
 apiVersion: "bosh.akgupta.ca/v1"
-kind: VMExtension
+kind: Extension
 metadata:
   name: port-tcp-443-8443
   namespace: test

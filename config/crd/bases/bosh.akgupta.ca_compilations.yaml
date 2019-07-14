@@ -404,6 +404,8 @@ spec:
           properties:
             az_cloud_properties:
               type: object
+            cloud_properties:
+              type: object
             cpu:
               type: integer
             director:
@@ -430,8 +432,6 @@ spec:
               items:
                 type: string
               type: array
-            vm_cloud_properties:
-              type: object
           required:
           - replicas
           - cpu

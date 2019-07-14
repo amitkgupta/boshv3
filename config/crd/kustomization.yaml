@@ -6,7 +6,7 @@ resources:
 - bases/bosh.akgupta.ca_baseimages.yaml
 - bases/bosh.akgupta.ca_directors.yaml
 - bases/bosh.akgupta.ca_teams.yaml
-- bases/bosh.akgupta.ca_vmextensions.yaml
+- bases/bosh.akgupta.ca_extensions.yaml
 - bases/bosh.akgupta.ca_azs.yaml
 - bases/bosh.akgupta.ca_networks.yaml
 - bases/bosh.akgupta.ca_compilations.yaml
@@ -34,9 +34,9 @@ patches:
 - patches/additional_printer_columns_in_teams.yaml
 - patches/status_subresource_in_teams.yaml
 
-- patches/categories_in_vmextensions.yaml
-- patches/additional_printer_columns_in_vmextensions.yaml
-- patches/status_subresource_in_vmextensions.yaml
+- patches/categories_in_extensions.yaml
+- patches/additional_printer_columns_in_extensions.yaml
+- patches/status_subresource_in_extensions.yaml
 
 - patches/categories_in_azs.yaml
 - patches/additional_printer_columns_in_azs.yaml

@@ -27,23 +27,23 @@ import (
 	"github.com/amitkgupta/boshv3/remote-clients"
 )
 
-// VMExtensionReconciler reconciles a VMExtension object
-type VMExtensionReconciler struct {
+// ExtensionReconciler reconciles a Extension object
+type ExtensionReconciler struct {
 	client.Client
 	Log                 logr.Logger
 	BOSHSystemNamespace string
 }
 
-// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=vmextensions,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=vmextensions/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=extensions,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=bosh.akgupta.ca,resources=extensions/status,verbs=get;update;patch
 
-func (r *VMExtensionReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
+func (r *ExtensionReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("vm_extension", req.NamespacedName)
+	log := r.Log.WithValues("extension", req.NamespacedName)
 
-	var vmExtension boshv1.VMExtension
-	if err = r.Get(ctx, req.NamespacedName, &vmExtension); err != nil {
-		log.Error(err, "unable to fetch VM extension")
+	var extension boshv1.Extension
+	if err = r.Get(ctx, req.NamespacedName, &extension); err != nil {
+		log.Error(err, "unable to fetch extension")
 		err = ignoreDoesNotExist(err)
 		return
 	}
@@ -60,7 +60,7 @@ func (r *VMExtensionReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err 
 		return
 	}
 
-	if err = reconcileWithBOSH(ctx, log, r.Client, bc, &vmExtension); err != nil {
+	if err = reconcileWithBOSH(ctx, log, r.Client, bc, &extension); err != nil {
 		log.Error(err, "unable to reconcile with BOSH")
 		return
 	}
@@ -68,8 +68,8 @@ func (r *VMExtensionReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, err 
 	return
 }
 
-func (r *VMExtensionReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ExtensionReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&boshv1.VMExtension{}).
+		For(&boshv1.Extension{}).
 		Complete(r)
 }
