@@ -4,7 +4,10 @@
 
 The goal of this project is to explore:
 
-- a concept: a "v3" API for [BOSH](https://bosh.io/) comprised of consistent, modular resources.
+- a concept: a "v3" API for [BOSH](https://bosh.io/) comprised of consistent, modular resources
+- another concept: a model for tenancy that enables separating responsibilities of a platform administrator,
+a service administrator using the platform to expose a service to consumers (developers), and a service
+consumer using that service to solve a problem
 - a technology: [Kubebuilder](https://book.kubebuilder.io/) and Kubernetes [Custom Resource Definitions](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) (CRDs)
 
 This repository contains source code and [make](https://www.gnu.org/software/make/manual/make.html) tasks
@@ -12,6 +15,8 @@ to build and install CRDs and controllers to a Kubernetes cluster. They extend t
 expose resources to manage tenancy to multiple BOSH Directors and enable tenants to create BOSH
 resources. In some sense this API extension is a shim in front of the BOSH API to explore what a
 different style of API for BOSH could be like.
+
+[![demo](https://asciinema.org/a/257401.svg)](https://asciinema.org/a/257401?autoplay=1)
 
 ## Table of Contents
 
