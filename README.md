@@ -244,7 +244,6 @@ spec:
   uaa_client_secret: <UAA_SECRET_NAME> # any name you want
   uaa_ca_cert: # `bosh int --path /uaa_ssl/ca creds.yml` where `creds.yml` is the vars file generated
                # when creating BOSH
-    
 ```
 
 Create a `Secret` in the BOSH system namespace with name matching `<UAA_SECRET_NAME>`:
