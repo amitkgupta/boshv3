@@ -55,7 +55,7 @@ func (in *AZ) DeepCopyObject() runtime.Object {
 func (in *AZList) DeepCopyInto(out *AZList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]AZ, len(*in))
@@ -154,7 +154,7 @@ func (in *BaseImage) DeepCopyObject() runtime.Object {
 func (in *BaseImageList) DeepCopyInto(out *BaseImageList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]BaseImage, len(*in))
@@ -244,7 +244,7 @@ func (in *Compilation) DeepCopyObject() runtime.Object {
 func (in *CompilationList) DeepCopyInto(out *CompilationList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Compilation, len(*in))
@@ -388,7 +388,7 @@ func (in *Deployment) DeepCopyObject() runtime.Object {
 func (in *DeploymentList) DeepCopyInto(out *DeploymentList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Deployment, len(*in))
@@ -495,7 +495,7 @@ func (in *Director) DeepCopyObject() runtime.Object {
 func (in *DirectorList) DeepCopyInto(out *DirectorList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Director, len(*in))
@@ -599,7 +599,7 @@ func (in *Extension) DeepCopyObject() runtime.Object {
 func (in *ExtensionList) DeepCopyInto(out *ExtensionList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Extension, len(*in))
@@ -713,7 +713,7 @@ func (in *Network) DeepCopyObject() runtime.Object {
 func (in *NetworkList) DeepCopyInto(out *NetworkList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Network, len(*in))
@@ -810,7 +810,7 @@ func (in *Release) DeepCopyObject() runtime.Object {
 func (in *ReleaseList) DeepCopyInto(out *ReleaseList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Release, len(*in))
@@ -914,7 +914,7 @@ func (in *Role) DeepCopyObject() runtime.Object {
 func (in *RoleList) DeepCopyInto(out *RoleList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Role, len(*in))
@@ -1049,7 +1049,7 @@ func (in *Team) DeepCopyObject() runtime.Object {
 func (in *TeamList) DeepCopyInto(out *TeamList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Team, len(*in))
